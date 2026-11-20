@@ -1,0 +1,341 @@
+{
+ "fps": 30,
+ "barFrames": 75,
+ "durationInFrames": 1815,
+ "shots": [
+  {
+   "f": 0,
+   "d": 150,
+   "clip": "pu_silver",
+   "t": 4.8,
+   "in": "none",
+   "ov": 0,
+   "rate": 0.6
+  },
+  {
+   "f": 150,
+   "d": 150,
+   "clip": "pu_silver",
+   "t": 39.7,
+   "in": "black",
+   "ov": 24,
+   "rate": 0.6
+  },
+  {
+   "f": 300,
+   "d": 75,
+   "clip": "pu_silver",
+   "t": 8.88,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.7
+  },
+  {
+   "f": 375,
+   "d": 75,
+   "clip": "pu_silver",
+   "t": 32.67,
+   "in": "slide",
+   "ov": 20,
+   "rate": 0.7
+  },
+  {
+   "f": 450,
+   "d": 75,
+   "clip": "pu_silver",
+   "t": 25.48,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.7
+  },
+  {
+   "f": 525,
+   "d": 75,
+   "clip": "pu_silver",
+   "t": 36.27,
+   "in": "slide",
+   "ov": 20,
+   "rate": 0.7
+  },
+  {
+   "f": 600,
+   "d": 75,
+   "clip": "pu_silver",
+   "t": 12.97,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.7
+  },
+  {
+   "f": 675,
+   "d": 75,
+   "clip": "detail",
+   "t": 28.0,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.9
+  },
+  {
+   "f": 750,
+   "d": 75,
+   "clip": "detail",
+   "t": 20.0,
+   "in": "slide",
+   "ov": 20,
+   "rate": 0.9
+  },
+  {
+   "f": 825,
+   "d": 75,
+   "clip": "detail",
+   "t": 37.0,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.9
+  },
+  {
+   "f": 900,
+   "d": 75,
+   "clip": "detail",
+   "t": 85.0,
+   "in": "black",
+   "ov": 24,
+   "rate": 0.8
+  },
+  {
+   "f": 975,
+   "d": 75,
+   "clip": "detail",
+   "t": 95.5,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.9
+  },
+  {
+   "f": 1050,
+   "d": 150,
+   "clip": "spbu",
+   "t": 1.0,
+   "in": "black",
+   "ov": 24,
+   "rate": 0.9
+  },
+  {
+   "f": 1200,
+   "d": 75,
+   "clip": "pasar",
+   "t": 0.2,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.85
+  },
+  {
+   "f": 1275,
+   "d": 75,
+   "clip": "pasar",
+   "t": 4.6,
+   "in": "slide",
+   "ov": 20,
+   "rate": 0.85
+  },
+  {
+   "f": 1350,
+   "d": 75,
+   "clip": "spbu",
+   "t": 18.0,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.9
+  },
+  {
+   "f": 1425,
+   "d": 75,
+   "clip": "blindvan",
+   "t": 32.0,
+   "in": "zoom",
+   "ov": 18,
+   "rate": 0.6
+  },
+  {
+   "f": 1500,
+   "d": 75,
+   "clip": "blindvan",
+   "t": 50.8,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.8
+  },
+  {
+   "f": 1575,
+   "d": 75,
+   "clip": "pu_silver",
+   "t": 40.0,
+   "in": "dissolve",
+   "ov": 18,
+   "rate": 0.55
+  },
+  {
+   "f": 1650,
+   "d": 165,
+   "clip": "blindvan",
+   "t": 50.4,
+   "in": "black",
+   "ov": 24,
+   "rate": 0.5,
+   "blur": 16,
+   "dim": 0.5
+  }
+ ],
+ "texts": [
+  {
+   "f": 15,
+   "d": 127,
+   "style": "intro",
+   "a": "Setiap usaha",
+   "b": "butuh partner yang bisa diandalkan."
+  },
+  {
+   "f": 161,
+   "d": 135,
+   "style": "title",
+   "top": "DAIHATSU",
+   "main": "GRAN MAX",
+   "sub": "PICK UP  \u00b7  BLIND VAN"
+  },
+  {
+   "f": 311,
+   "d": 60,
+   "style": "lower",
+   "cat": "DESAIN",
+   "main": "Bak luas & kokoh",
+   "sub": "Siap angkut muatan harian"
+  },
+  {
+   "f": 386,
+   "d": 60,
+   "style": "lower",
+   "cat": "MESIN",
+   "main": "1.5L Dual VVT-i",
+   "sub": "Bertenaga & efisien"
+  },
+  {
+   "f": 461,
+   "d": 135,
+   "style": "lower",
+   "cat": "DAYA ANGKUT",
+   "main": "Dimensi bak lega",
+   "sub": "Bongkar muat lebih praktis"
+  },
+  {
+   "f": 611,
+   "d": 60,
+   "style": "lower",
+   "cat": "KABIN",
+   "main": "Lega & ergonomis",
+   "sub": "Nyaman untuk perjalanan jauh"
+  },
+  {
+   "f": 686,
+   "d": 135,
+   "style": "lower",
+   "cat": "FITUR",
+   "main": "AC & Power Steering",
+   "sub": "Dingin, ringan, tidak bikin capek"
+  },
+  {
+   "f": 836,
+   "d": 60,
+   "style": "lower",
+   "cat": "FITUR",
+   "main": "Head unit audio",
+   "sub": "Teman di setiap perjalanan"
+  },
+  {
+   "f": 911,
+   "d": 135,
+   "style": "statement",
+   "a": "Dirancang untuk",
+   "b": "kerja keras."
+  },
+  {
+   "f": 1065,
+   "d": 127,
+   "style": "statement",
+   "a": "Terbukti",
+   "b": "di lapangan."
+  },
+  {
+   "f": 1211,
+   "d": 135,
+   "style": "lower",
+   "cat": "PERFORMA",
+   "main": "Muatan maksimal",
+   "sub": "Tetap stabil & bandel"
+  },
+  {
+   "f": 1361,
+   "d": 60,
+   "style": "lower",
+   "cat": "ANDALAN",
+   "main": "Pedagang & pengusaha",
+   "sub": "Dari pasar sampai gudang"
+  },
+  {
+   "f": 1436,
+   "d": 135,
+   "style": "lower",
+   "cat": "VARIAN",
+   "main": "Tersedia Blind Van",
+   "sub": "Ruang kargo tertutup & aman"
+  },
+  {
+   "f": 1582,
+   "d": 64,
+   "style": "tagline",
+   "main": "GRAN MAX",
+   "sub": "Teman setia usaha Anda."
+  }
+ ],
+ "cta": {
+  "brand": "DAIHATSU GRAN MAX",
+  "tag": "Teman setia usaha Anda.",
+  "promo": [
+   "Promo Akhir Tahun",
+   "DP Ringan",
+   "Angsuran Bersahabat"
+  ],
+  "contact": "Informasi & pemesanan",
+  "name": "DIO DAIHATSU",
+  "phone": "0822-5699-6949",
+  "fine": "*Syarat & ketentuan berlaku",
+  "f": 1650,
+  "d": 165
+ },
+ "bars": [
+  0,
+  75,
+  150,
+  225,
+  300,
+  375,
+  450,
+  525,
+  600,
+  675,
+  750,
+  825,
+  900,
+  975,
+  1050,
+  1125,
+  1200,
+  1275,
+  1350,
+  1425,
+  1500,
+  1575,
+  1650,
+  1725,
+  1800
+ ]
+}
