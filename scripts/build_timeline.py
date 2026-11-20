@@ -43,10 +43,10 @@ SHOTS = [
     (1, "detail", 97.0, "whip"),
     (2, "pu_silver", 32.3, "zoom"),
     (3, "spbu", 3.0, "whip"),
-    (4, "pasar", 5.0, "cut"),
-    (5, "blindvan", 46.0, "cut"),
-    (6, "detail", 37.0, "cut"),
-    (7, "pu_silver", 8.35, "cut"),
+    (4, "pasar", 5.0, "zoom"),
+    (5, "blindvan", 46.0, "whip"),
+    (6, "detail", 37.0, "zoom"),
+    (7, "pu_silver", 8.35, "whip"),
     # judul
     (8, "pu_silver", 40.2, "flash"),
     (12, "pu_silver", 4.4, "whip"),
@@ -58,9 +58,9 @@ SHOTS = [
     (24, "pu_silver", 8.4, "whip"),
     (26, "pu_silver", 26.0, "zoom"),
     (28, "pu_silver", 41.0, "whip"),
-    (29, "detail", 136.0, "cut"),
-    (30, "pu_silver", 4.6, "cut"),
-    (31, "detail", 98.0, "cut"),
+    (29, "detail", 136.0, "zoom"),
+    (30, "pu_silver", 4.6, "whip"),
+    (31, "detail", 98.0, "zoom"),
     # --- break1: Blind Van
     (32, "blindvan", 50.5, "fade"),
     (36, "blindvan", 8.5, "zoom"),
@@ -97,9 +97,9 @@ SHOTS = [
     (96, "detail", 100.0, "whip"),
     (98, "blindvan", 47.5, "spin"),
     (100, "pu_silver", 36.5, "whip"),
-    (101, "spbu", 24.0, "cut"),
-    (102, "pasar", 12.0, "cut"),
-    (103, "pu_silver", 41.5, "cut"),
+    (101, "spbu", 24.0, "zoom"),
+    (102, "pasar", 12.0, "whip"),
+    (103, "pu_silver", 41.5, "zoom"),
     # --- break2
     (104, "spbu", 0.5, "fade", {"rate": 0.8, "dim": 0.4}),
     # stutter menjelang drop (dalam ketukan pecahan)
@@ -164,6 +164,21 @@ CTA = {
 LOUD = ["a1", "b1", "a2", "b2"]
 
 
+# Bagian gelap (kedip hitam) di klip sumber, detik. Potongan digeser otomatis menjauhinya.
+DIPS = {"pu_silver": [4.0, 8.0, 12.1, 16.5, 20.9, 24.6, 28.3, 31.8, 35.4, 38.9]}
+PREROLL = 0.4  # transisi halus mulai +-0.3 dtk sebelum ketukan
+
+
+def avoid_dips(clip, t, dur, rate):
+    for _ in range(40):
+        a, b = t - PREROLL * rate, t + dur * rate
+        hit = [d for d in DIPS.get(clip, []) if a - 0.05 < d + 0.3 and d - 0.05 < b]
+        if not hit:
+            return t
+        t = round(max(hit) + 0.35 + PREROLL * rate, 2)
+    return t
+
+
 def build():
     shots = []
     for i, s in enumerate(SHOTS):
@@ -172,6 +187,10 @@ def build():
         n_next = SHOTS[i + 1][0] if i + 1 < len(SHOTS) else None
         f0 = fr(n)
         f1 = fr(n_next) if n_next is not None else DUR
+        t2 = avoid_dips(clip, t, (f1 - f0) / FPS, extra.get("rate", 1))
+        if t2 != t:
+            print(f"  geser {clip} {t} -> {t2} (hindari kedip hitam)")
+            t = t2
         d = {"f": f0, "d": f1 - f0, "clip": clip, "t": t, "in": tr}
         d.update(extra)
         shots.append(d)

@@ -62,7 +62,7 @@ const beatPulse = (g: number) => {
     if (x.f <= g) b = x;
     else break;
   }
-  return g < b.f ? 0 : b.w * Math.exp(-(g - b.f) / 3.2);
+  return g < b.f ? 0 : b.w * Math.exp(-(g - b.f) / 4.5);
 };
 
 // ------------------------------------------------------------------ font loader
@@ -78,66 +78,103 @@ const useFonts = () => {
 };
 
 // ------------------------------------------------------------------ shot video
-const ShotView: React.FC<{ s: Shot; idx: number; next?: Shot }> = ({ s, idx, next }) => {
-  const f = useCurrentFrame();
+// Transisi halus: shot baru mulai OV frame SEBELUM ketukan dan menimpa shot lama,
+// sehingga tepat di ketukan shot baru sudah penuh (crossfade / push / zoom-through).
+const TR_LEN: Record<string, number> = { whip: 9, zoom: 9, spin: 10, flash: 6, fade: 14, cut: 0 };
+const smooth = Easing.inOut(Easing.cubic);
+
+const overlapOf = (i: number) => {
+  const s = shots[i];
+  const prev = shots[i - 1];
+  if (!prev || s.clip === "black" || prev.clip === "black") return 0;
+  const want = TR_LEN[s.in ?? "cut"] ?? 0;
+  return Math.max(0, Math.min(want, Math.floor(prev.d * 0.45), Math.floor(s.d * 0.45)));
+};
+const overlaps = shots.map((_, i) => overlapOf(i));
+const dirOf = (i: number) => (i % 2 === 0 ? 1 : -1);
+
+const ShotView: React.FC<{ s: Shot; idx: number }> = ({ s, idx }) => {
+  const local = useCurrentFrame();
+  const ov = overlaps[idx];
+  const f = local - ov; // 0 = tepat di ketukan
   const g = s.f + f;
   if (s.clip === "black") return <AbsoluteFill style={{ background: "#000" }} />;
 
   const tr = s.in ?? "cut";
-  const dir = idx % 2 === 0 ? 1 : -1;
   let scale = 1;
   let tx = 0;
   let rot = 0;
   let blur = s.blur ?? 0;
   let opacity = 1;
+  let glow = 1;
 
-  if (tr === "zoom") {
-    scale *= interpolate(f, [0, 7], [1.45, 1], { ...clamp, easing: outExpo });
-    blur += interpolate(f, [0, 6], [14, 0], clamp);
-  } else if (tr === "whip") {
-    tx = interpolate(f, [0, 6], [55 * dir, 0], { ...clamp, easing: outExpo });
-    blur += interpolate(f, [0, 6], [26, 0], clamp);
-    scale *= interpolate(f, [0, 6], [1.15, 1], clamp);
-  } else if (tr === "spin") {
-    rot = interpolate(f, [0, 8], [-14 * dir, 0], { ...clamp, easing: outExpo });
-    scale *= interpolate(f, [0, 8], [1.5, 1], { ...clamp, easing: outExpo });
-    blur += interpolate(f, [0, 7], [12, 0], clamp);
-  } else if (tr === "flash") {
-    scale *= interpolate(f, [0, 14], [1.22, 1], { ...clamp, easing: outExpo });
+  // ---- masuk (f dari -ov sampai 0)
+  if (ov > 0) {
+    const p = interpolate(f, [-ov, 0], [0, 1], { ...clamp, easing: smooth });
+    const bump = Math.sin(Math.PI * p);
+    const dir = dirOf(idx);
+    if (tr === "whip") {
+      tx = (1 - p) * 100 * dir;
+      blur += 7 * bump;
+    } else if (tr === "zoom") {
+      scale *= 1.45 - 0.45 * p;
+      blur += 9 * (1 - p);
+      opacity = interpolate(f, [-ov, -ov * 0.35], [0, 1], { ...clamp, easing: smooth });
+    } else if (tr === "spin") {
+      scale *= 1.45 - 0.45 * p;
+      rot = -12 * dir * (1 - p);
+      blur += 8 * (1 - p);
+      opacity = interpolate(f, [-ov, -ov * 0.35], [0, 1], { ...clamp, easing: smooth });
+    } else if (tr === "flash") {
+      opacity = p;
+      glow = 1 + 0.5 * (1 - p);
+    } else if (tr === "fade") {
+      opacity = p;
+    }
   } else if (tr === "fade") {
-    opacity = interpolate(f, [0, 12], [0, 1], clamp);
+    opacity = interpolate(f, [0, 12], [0, 1], { ...clamp, easing: smooth });
   }
+  // sedikit "settle" setelah ketukan supaya mendarat lembut
+  if (tr !== "cut") scale *= interpolate(f, [0, 12], [1.04, 1], { ...clamp, easing: outExpo });
 
-  // Keluar: dorong maju + blur, sambung ke transisi shot berikutnya
-  const nt = next?.in ?? "cut";
-  if (next && next.clip !== "black" && ["zoom", "whip", "spin"].includes(nt)) {
-    const e = interpolate(f, [s.d - 4, s.d], [0, 1], clamp);
+  // ---- keluar: ikut gerak transisi shot berikutnya
+  const next = shots[idx + 1];
+  const nov = overlaps[idx + 1] ?? 0;
+  if (next && nov > 0) {
+    const e = interpolate(f, [s.d - nov, s.d], [0, 1], { ...clamp, easing: smooth });
+    const nt = next.in ?? "cut";
+    const ndir = dirOf(idx + 1);
     if (nt === "whip") {
-      tx += -45 * (idx % 2 === 0 ? -1 : 1) * e * e;
-      blur += 22 * e;
-    } else {
-      scale *= 1 + 0.35 * e * e;
-      blur += 10 * e;
+      tx += -e * 100 * ndir;
+      blur += 7 * Math.sin(Math.PI * e);
+    } else if (nt === "zoom" || nt === "spin") {
+      scale *= 1 + 0.35 * e;
+      blur += 7 * e;
+      if (nt === "spin") rot += 10 * ndir * e;
+    } else if (nt === "flash") {
+      glow *= 1 + 0.5 * e;
     }
   }
 
-  // Ken burns pelan + denyut beat di bagian drop
-  scale *= 1 + f * 0.0016;
-  const p = beatPulse(g);
-  scale *= 1 + 0.055 * p;
-  const bright = 1 + 0.15 * p;
+  // Ken burns pelan + denyut beat (lebih lembut)
+  scale *= 1 + (f + ov) * 0.0012;
+  const pl = beatPulse(g);
+  scale *= 1 + 0.032 * pl;
+  const bright = (1 + 0.08 * pl) * glow;
 
+  const fps = timeline.fps;
+  const trim = Math.max(0, Math.round((s.t ?? 0) * fps - ov * (s.rate ?? 1)));
   return (
-    <AbsoluteFill style={{ overflow: "hidden", background: "#000", opacity }}>
+    <AbsoluteFill style={{ overflow: "hidden", opacity }}>
       <AbsoluteFill
         style={{
           transform: `translateX(${tx}%) scale(${scale}) rotate(${rot}deg)`,
-          filter: `blur(${blur}px) contrast(1.12) saturate(1.22) brightness(${bright * (s.dim ? 1 - s.dim : 1)})`,
+          filter: `blur(${blur.toFixed(2)}px) contrast(1.1) saturate(1.2) brightness(${bright * (s.dim ? 1 - s.dim : 1)})`,
         }}
       >
         <OffthreadVideo
           src={staticFile(`clips/${s.clip}.mp4`)}
-          trimBefore={Math.round((s.t ?? 0) * timeline.fps)}
+          trimBefore={trim}
           playbackRate={s.rate ?? 1}
           muted
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
@@ -152,14 +189,14 @@ const Flash: React.FC = () => {
   const g = useCurrentFrame();
   let a = 0;
   for (const s of shots) {
-    if (s.in === "flash" && g >= s.f && g < s.f + 8) {
+    if (s.in === "flash" && g >= s.f && g < s.f + 10) {
       const big = drops.includes(s.f);
-      a = Math.max(a, interpolate(g - s.f, [0, big ? 7 : 5], [big ? 1 : 0.75, 0], clamp));
+      a = Math.max(a, interpolate(g - s.f, [0, big ? 10 : 8], [big ? 0.55 : 0.28, 0], { ...clamp, easing: outExpo }));
     }
   }
   // kilat kecil di stutter sebelum drop
   for (const s of shots) {
-    if (s.f >= stutterA && s.f < stutterB && s.clip !== "black" && g === s.f) a = Math.max(a, 0.5);
+    if (s.f >= stutterA && s.f < stutterB && s.clip !== "black" && g === s.f) a = Math.max(a, 0.3);
   }
   return <AbsoluteFill style={{ background: "#fff", opacity: a, pointerEvents: "none" }} />;
 };
@@ -201,14 +238,14 @@ const Shake: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   let amp = 0;
   for (const st of drops) {
     const l = g - st;
-    if (l >= 0 && l < 14) amp = Math.max(amp, interpolate(l, [0, 14], [26, 0]));
+    if (l >= 0 && l < 14) amp = Math.max(amp, interpolate(l, [0, 14], [10, 0]));
   }
   for (const s of shots) {
-    if (s.in === "flash" && g - s.f >= 0 && g - s.f < 8) amp = Math.max(amp, interpolate(g - s.f, [0, 8], [12, 0]));
+    if (s.in === "flash" && g - s.f >= 0 && g - s.f < 8) amp = Math.max(amp, interpolate(g - s.f, [0, 8], [4, 0]));
   }
   const x = (random(`x${g}`) - 0.5) * amp;
   const y = (random(`y${g}`) - 0.5) * amp;
-  return <AbsoluteFill style={{ transform: `translate(${x}px, ${y}px) scale(${amp ? 1.03 : 1})` }}>{children}</AbsoluteFill>;
+  return <AbsoluteFill style={{ transform: `translate(${x}px, ${y}px) scale(${amp ? 1.015 : 1})` }}>{children}</AbsoluteFill>;
 };
 
 // Label brand kecil di atas (di bawah area UI TikTok)
@@ -245,8 +282,8 @@ const shadow = "0 10px 0 rgba(0,0,0,0.35), 0 0 40px rgba(0,0,0,0.55)";
 
 const TextLayer: React.FC<{ t: Txt }> = ({ t }) => {
   const f = useCurrentFrame();
-  const out = interpolate(f, [t.d - 5, t.d], [1, 0], clamp);
-  const outScale = interpolate(f, [t.d - 5, t.d], [1, 1.25], clamp);
+  const out = interpolate(f, [t.d - 7, t.d], [1, 0], { ...clamp, easing: smooth });
+  const outScale = interpolate(f, [t.d - 7, t.d], [1, 1.08], { ...clamp, easing: smooth });
 
   if (t.style === "kicker") {
     return (
@@ -279,7 +316,7 @@ const TextLayer: React.FC<{ t: Txt }> = ({ t }) => {
 
   if (t.style === "title" || t.style === "hero") {
     const hero = t.style === "hero";
-    const sc = interpolate(f, [0, 7], [2.4, 1], { ...clamp, easing: outExpo });
+    const sc = interpolate(f, [0, 10], [1.6, 1], { ...clamp, easing: outExpo });
     const glitch = f < 9 ? interpolate(f, [0, 9], [18, 0]) : 0;
     const subP = interpolate(f, [8, 18], [0, 1], { ...clamp, easing: outExpo });
     const bar = interpolate(f, [4, 20], [0, 1], { ...clamp, easing: outExpo });
@@ -336,8 +373,8 @@ const TextLayer: React.FC<{ t: Txt }> = ({ t }) => {
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", opacity: out, top: -60, transform: `scale(${outScale})` }}>
         {t.lines.map((ln, i) => {
           const st = i * (t.d >= 60 ? 15 : 5);
-          const sc = interpolate(f, [st, st + 6], [1.9, 1], { ...clamp, easing: outBack });
-          const o = interpolate(f, [st, st + 2], [0, 1], clamp);
+          const sc = interpolate(f, [st, st + 8], [1.45, 1], { ...clamp, easing: outBack });
+          const o = interpolate(f, [st, st + 4], [0, 1], clamp);
           const skew = interpolate(f, [st, st + 6], [-12, 0], clamp);
           const grow = 1 + Math.max(0, f - st) * 0.003;
           return (
@@ -544,8 +581,8 @@ export const GranMaxPromo: React.FC = () => {
     <AbsoluteFill style={{ background: "#000" }}>
       <Shake>
         {shots.map((s, i) => (
-          <Sequence key={i} from={s.f} durationInFrames={s.d} layout="none">
-            <ShotView s={s} idx={i} next={shots[i + 1]} />
+          <Sequence key={i} from={s.f - overlaps[i]} durationInFrames={s.d + overlaps[i]} layout="none">
+            <ShotView s={s} idx={i} />
           </Sequence>
         ))}
         <LightLeak />

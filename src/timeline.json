@@ -583,7 +583,7 @@
    "f": 31,
    "d": 14,
    "clip": "pu_silver",
-   "t": 32.3,
+   "t": 32.55,
    "in": "zoom"
   },
   {
@@ -598,28 +598,28 @@
    "d": 13,
    "clip": "pasar",
    "t": 5.0,
-   "in": "cut"
+   "in": "zoom"
   },
   {
    "f": 72,
    "d": 14,
    "clip": "blindvan",
    "t": 46.0,
-   "in": "cut"
+   "in": "whip"
   },
   {
    "f": 86,
    "d": 14,
    "clip": "detail",
    "t": 37.0,
-   "in": "cut"
+   "in": "zoom"
   },
   {
    "f": 100,
    "d": 14,
    "clip": "pu_silver",
-   "t": 8.35,
-   "in": "cut"
+   "t": 8.75,
+   "in": "whip"
   },
   {
    "f": 114,
@@ -632,7 +632,7 @@
    "f": 169,
    "d": 28,
    "clip": "pu_silver",
-   "t": 4.4,
+   "t": 4.75,
    "in": "whip"
   },
   {
@@ -646,35 +646,35 @@
    "f": 225,
    "d": 27,
    "clip": "pu_silver",
-   "t": 35.8,
+   "t": 36.15,
    "in": "spin"
   },
   {
    "f": 252,
    "d": 28,
    "clip": "pu_silver",
-   "t": 24.9,
+   "t": 25.35,
    "in": "whip"
   },
   {
    "f": 280,
    "d": 28,
    "clip": "pu_silver",
-   "t": 28.6,
+   "t": 29.05,
    "in": "zoom"
   },
   {
    "f": 308,
    "d": 27,
    "clip": "pu_silver",
-   "t": 32.3,
+   "t": 32.55,
    "in": "flash"
   },
   {
    "f": 335,
    "d": 28,
    "clip": "pu_silver",
-   "t": 8.4,
+   "t": 8.75,
    "in": "whip"
   },
   {
@@ -696,21 +696,21 @@
    "d": 14,
    "clip": "detail",
    "t": 136.0,
-   "in": "cut"
+   "in": "zoom"
   },
   {
    "f": 419,
    "d": 13,
    "clip": "pu_silver",
-   "t": 4.6,
-   "in": "cut"
+   "t": 4.75,
+   "in": "whip"
   },
   {
    "f": 432,
    "d": 14,
    "clip": "detail",
    "t": 98.0,
-   "in": "cut"
+   "in": "zoom"
   },
   {
    "f": 446,
@@ -828,14 +828,14 @@
    "f": 889,
    "d": 28,
    "clip": "pu_silver",
-   "t": 28.6,
+   "t": 29.05,
    "in": "whip"
   },
   {
    "f": 917,
    "d": 28,
    "clip": "pu_silver",
-   "t": 36.0,
+   "t": 36.15,
    "in": "zoom"
   },
   {
@@ -948,21 +948,21 @@
    "d": 13,
    "clip": "spbu",
    "t": 24.0,
-   "in": "cut"
+   "in": "zoom"
   },
   {
    "f": 1415,
    "d": 14,
    "clip": "pasar",
    "t": 12.0,
-   "in": "cut"
+   "in": "whip"
   },
   {
    "f": 1429,
    "d": 14,
    "clip": "pu_silver",
    "t": 41.5,
-   "in": "cut"
+   "in": "zoom"
   },
   {
    "f": 1443,
