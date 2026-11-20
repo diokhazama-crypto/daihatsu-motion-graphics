@@ -2,7 +2,7 @@
 
   0 - 1.6 dtk   cold open: raungan mesin saja (+ desir naik ke hentakan pertama)
   1.6 dtk       lagu masuk (utuh 14.36 dtk), mesin tetap terdengar pelan di bawahnya
-  sesudah lagu  lagu diulang mulus dari DROP (beda tepat 19 ketukan) untuk end card, lalu fade out
+  lagu diputar 3 putaran (sambungan crossfade 20 ms), end card di drop putaran 3, lalu fade out
 Raungan mesin ikut speed ramp gambar: saat slow-mo suaranya melambat & jadi lebih berat.
 
 Pemakaian: python3 scripts/make_tanjakan_audio.py
@@ -47,14 +47,15 @@ def place(tr, sig, t, g=1.0):
 
 # ------------------------------------------------------------------ lagu
 song = load(os.path.join(ROOT, "assets", "lagu_tanjakan.mp3"))
-cold, end, drop = SONG["cold"], SONG["end"], SONG["drop"]
+cold, end, passes = SONG["cold"], SONG["end"], SONG["passes"]
 music = np.zeros((N, 2))
-a = song[: int(round(end * SR))]
-b = song[int(round(drop * SR)):]
-xf = int(0.03 * SR)                      # crossfade 30 ms di titik loop
-ramp = np.linspace(0, 1, xf)[:, None]
-a_tail = a[-xf:] * (1 - ramp) + b[:xf] * ramp
-seq = np.concatenate([a[:-xf], a_tail, b[xf:]])
+one = song[: int(round(end * SR))]
+xf = int(0.02 * SR)                      # crossfade 20 ms di tiap sambungan putaran
+seq = one.copy()
+for _ in range(passes - 1):
+    ramp = np.linspace(0, 1, xf)[:, None]
+    seam = seq[-xf:] * (1 - ramp) + one[:xf] * ramp
+    seq = np.concatenate([seq[:-xf], seam, one[xf:]])
 place(music, seq, cold)
 
 # ------------------------------------------------------------------ mesin (ikut speed ramp)
@@ -71,8 +72,8 @@ for s in TL["shots"][1:]:
     duck[i:i + w_] = np.linspace(0, 1, len(duck[i:i + w_]))
 eng_out = filt(eng_out, 50, "high") * duck
 eng_out /= np.abs(eng_out).max()
-pts = [(0, 0.0), (0.25, 1.4), (cold, 1.7), (cold + 0.4, 0.32), (cold + end - 1, 0.3),
-       (cold + end, 0.12), (TOTAL, 0.0)]
+card = TL["cta"]["f"] / FPS
+pts = [(0, 0.0), (0.25, 1.4), (cold, 1.7), (cold + 0.4, 0.32), (card - 1, 0.3), (card, 0.12), (TOTAL, 0.0)]
 eng_out *= np.interp(tout, [p[0] for p in pts], [p[1] for p in pts])
 
 # ------------------------------------------------------------------ sfx kecil

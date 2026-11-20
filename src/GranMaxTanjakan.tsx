@@ -111,6 +111,7 @@ const Picture: React.FC = () => {
   if (s.in === "whip") {
     const p = interpolate(k, [0, sec(0.16)], [1, 0], { ...clamp, easing: outCubic });
     tx += p * 38 * dir;
+    scale *= 1 + p * 0.85; // tetap menutup layar saat digeser
     blur += p * 26;
   }
   if (s.in === "glitch") {
@@ -128,6 +129,7 @@ const Picture: React.FC = () => {
   if (nx && nx.in === "whip") {
     const p = interpolate(left, [0, sec(0.14)], [1, 0], { ...clamp, easing: Easing.out(Easing.cubic) }) ** 3;
     tx -= p * 38 * (dir * -1);
+    scale *= 1 + p * 0.85;
     blur += p * 26;
   }
 
@@ -240,6 +242,9 @@ const Reveal: React.FC<{ p: number; children: React.ReactNode; style?: React.CSS
   </div>
 );
 
+// ukuran font Anton yang muat di lebar layar (+-0.5 em per huruf)
+const fit = (text: string, base: number, maxW = 960) => Math.min(base, maxW / (text.length * 0.5));
+
 const TextBlock: React.FC<{ t: Txt }> = ({ t }) => {
   const { f, out, at } = useInOut(t.d);
   const s = (k: string) => String(t[k] ?? "");
@@ -314,7 +319,7 @@ const TextBlock: React.FC<{ t: Txt }> = ({ t }) => {
         <div
           style={{
             fontFamily: BIG,
-            fontSize: 250,
+            fontSize: fit(s("w"), 250),
             color: "#fff",
             letterSpacing: 6,
             transform: `scale(${p * drift})`,
@@ -336,7 +341,7 @@ const TextBlock: React.FC<{ t: Txt }> = ({ t }) => {
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 84, color: "#fff", whiteSpace: "nowrap" }}>{s("a")}</div>
         </Reveal>
         <Reveal p={at(0.2, 0.45)}>
-          <div style={{ fontFamily: BIG, fontSize: 190, color: "#fff", letterSpacing: 6, lineHeight: 1.08, whiteSpace: "nowrap" }}>{s("b")}</div>
+          <div style={{ fontFamily: BIG, fontSize: fit(s("b"), 190), color: "#fff", letterSpacing: 6, lineHeight: 1.08, whiteSpace: "nowrap" }}>{s("b")}</div>
         </Reveal>
       </AbsoluteFill>
     );
@@ -351,7 +356,7 @@ const TextBlock: React.FC<{ t: Txt }> = ({ t }) => {
           <div style={{ fontFamily: BIG, fontSize: 196, letterSpacing: ls, marginLeft: ls, color: "#fff", lineHeight: 1.1, whiteSpace: "nowrap" }}>{s("main")}</div>
         </Reveal>
         <div style={{ width: 340 * at(0.3, 0.5), height: 6, background: RED, margin: "4px 0 22px" }} />
-        <div style={{ fontFamily: SANS, fontWeight: 600, fontSize: 32, letterSpacing: 10, color: "#fff", opacity: at(0.45, 0.4), marginLeft: 10 }}>{s("sub")}</div>
+        <div style={{ fontFamily: SANS, fontWeight: 600, fontSize: 30, letterSpacing: 6, color: "#fff", opacity: at(0.45, 0.4), marginLeft: 6, whiteSpace: "nowrap" }}>{s("sub")}</div>
       </AbsoluteFill>
     );
   }

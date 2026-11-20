@@ -9,7 +9,7 @@ Potongan, zoom, flash dan teks semuanya dikunci ke ketukan lagu.
 |----|-----|--------|
 | `GranMaxPromo` | v1-v2: jedag jedug TikTok, sinkron lagu MP3 | 60 detik |
 | `GranMaxIklan` | v3: iklan profesional, pakai lagu MP3 yang sama, potongan tiap bar | 60 detik |
-| `GranMaxTanjakan` | v4: cinematic TikTok, Gran Max angkut 2.900 kg sawit di tanjakan, 60 fps | 23,5 detik |
+| `GranMaxTanjakan` | v4: cinematic TikTok, Gran Max angkut 2.900 kg sawit di tanjakan, 60 fps, lagu 3 putaran | 44,7 detik |
 
 Render versi 3:
 
@@ -33,7 +33,7 @@ npm run render:tanjakan                  # -> out/granmax_tanjakan.mp4
 ```
 
 Potongan v4 dikunci ke hentakan bass lagu (150 BPM): intro bass = "2.900 KG", break = slow-mo,
-DROP di 6,76 dtk lagu = KUAT / BANDEL / TANGGUH, lalu lagu diulang mulus dari drop untuk end card.
+DROP di 6,76 dtk lagu = teks kinetik. Lagu diputar 3 putaran: hook, cerita, hero + end card.
 Transisi: `black`, `flash`, `whip`, `punch`, `glitch` (RGB split), `cut`; speed ramp per shot (r0 -> r1).
 
 ## Struktur
