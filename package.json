@@ -6,7 +6,8 @@
   "scripts": {
     "music": "python3 scripts/make_music.py",
     "studio": "remotion studio",
-    "render": "remotion render GranMaxPromo out/granmax_promo.mp4 --codec=h264 --crf=18 --audio-bitrate=320k"
+    "render": "remotion render GranMaxPromo out/granmax_promo.mp4 --codec=h264 --crf=18 --audio-bitrate=320k",
+    "render:tanjakan": "remotion render GranMaxTanjakan out/granmax_tanjakan.mp4 --codec=h264 --crf=17 --audio-bitrate=320k"
   },
   "dependencies": {
     "@fontsource/anton": "^5.3.0",
