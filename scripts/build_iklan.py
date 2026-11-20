@@ -1,6 +1,7 @@
 """Susun src/iklan.json untuk komposisi GranMaxIklan (gaya iklan profesional).
 
-Musik 96 BPM -> 1 bar = 2.5 dtk = 75 frame. Semua posisi ditulis dalam BAR.
+Musik = lagu MP3 (public/music.wav dari prep_music.py), 130 BPM.
+Potongan di awal bar (tiap 4 ketukan) -> tenang tapi tetap sinkron lagu.
 Jalankan: python3 scripts/build_iklan.py
 """
 import json
@@ -8,42 +9,57 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FPS = 30
-BAR_F = 75
-DUR = 1815  # 60.5 dtk
+# Grid ketukan lagu MP3 (sama dengan build_timeline.py / prep_music.py)
+T0 = 0.10521
+BEAT = 0.461525  # 130 BPM, 1 bar = 4 ketukan = 1.846 dtk
+DUR = 1811       # = panjang public/music.wav (60.36 dtk)
+MUSIC = "music.wav"
 
 
-def fr(bar):
-    return int(round(bar * BAR_F))
+def fr(n):
+    """frame untuk ketukan n (bar k = ketukan 4k)."""
+    return 0 if n <= 0 else int(round((T0 + n * BEAT) * FPS))
 
 
-# (bar_mulai, klip, detik_sumber, transisi, ekstra)
+# Struktur lagu (ketukan): 0-31 drop | 32-39 jeda | 40-71 drop | 72-103 (ulang) drop
+#                          | 104-111 jeda | 112-128 penutup
+# (ketukan_mulai, klip, detik_sumber, transisi, ekstra)
 # transisi: dissolve | slide | zoom | black (dip ke hitam) | none
 SHOTS = [
-    (0, "pu_silver", 4.75, "none", {"rate": 0.6}),
-    (2, "pu_silver", 39.3, "black", {"rate": 0.6}),
-    (4, "pu_silver", 8.75, "dissolve", {"rate": 0.7}),
-    (5, "pu_silver", 32.55, "slide", {"rate": 0.7}),
-    (6, "pu_silver", 25.1, "dissolve", {"rate": 0.7}),
-    (7, "pu_silver", 36.1, "slide", {"rate": 0.7}),
-    (8, "pu_silver", 12.6, "dissolve", {"rate": 0.7}),
-    (9, "detail", 28.0, "dissolve", {"rate": 0.9}),
-    (10, "detail", 20.0, "slide", {"rate": 0.9}),
-    (11, "detail", 37.0, "dissolve", {"rate": 0.9}),
-    (12, "detail", 85.0, "black", {"rate": 0.8}),
-    (13, "detail", 95.5, "dissolve", {"rate": 0.9}),
-    (14, "spbu", 1.0, "black", {"rate": 0.9}),
-    (16, "pasar", 0.2, "dissolve", {"rate": 0.85}),
-    (17, "pasar", 4.6, "slide", {"rate": 0.85}),
-    (18, "spbu", 18.0, "dissolve", {"rate": 0.9}),
-    (19, "blindvan", 32.0, "zoom", {"rate": 0.6}),
-    (20, "blindvan", 50.8, "dissolve", {"rate": 0.8}),
-    (21, "pu_silver", 40.0, "dissolve", {"rate": 0.55}),
-    (22, "blindvan", 50.4, "black", {"rate": 0.5, "blur": 16, "dim": 0.5}),
+    (0, "pu_silver", 4.8, "none", {"rate": 0.75}),
+    (8, "pu_silver", 39.7, "black", {"rate": 0.7}),
+    (16, "pu_silver", 8.88, "dissolve", {"rate": 0.8}),
+    (20, "pu_silver", 32.67, "slide", {"rate": 0.8}),
+    (24, "pu_silver", 25.48, "dissolve", {"rate": 0.8}),
+    (28, "pu_silver", 36.27, "slide", {"rate": 0.8}),
+    # jeda lagu
+    (32, "detail", 95.5, "black", {"rate": 0.8}),
+    # drop 2: fitur
+    (40, "pu_silver", 12.97, "dissolve", {"rate": 0.8}),
+    (44, "detail", 28.0, "dissolve", {"rate": 0.9}),
+    (48, "detail", 20.0, "slide", {"rate": 0.9}),
+    (52, "detail", 37.0, "dissolve", {"rate": 0.9}),
+    (56, "detail", 85.0, "slide", {"rate": 0.9}),
+    (60, "detail", 101.0, "dissolve", {"rate": 0.9}),
+    (64, "pu_silver", 29.05, "slide", {"rate": 0.8}),
+    (68, "detail", 135.5, "dissolve", {"rate": 0.9}),
+    # lagu diulang: bukti di lapangan
+    (72, "spbu", 1.0, "black", {"rate": 0.9}),
+    (80, "pasar", 0.2, "dissolve", {"rate": 0.9}),
+    (84, "pasar", 4.6, "slide", {"rate": 0.9}),
+    (88, "spbu", 18.0, "dissolve", {"rate": 0.9}),
+    (92, "pasar", 10.5, "slide", {"rate": 0.9}),
+    (96, "blindvan", 32.0, "zoom", {"rate": 0.75}),
+    (100, "blindvan", 50.8, "dissolve", {"rate": 0.8}),
+    # jeda 2: tagline
+    (104, "pu_silver", 40.0, "black", {"rate": 0.6}),
+    # penutup
+    (112, "pu_silver", 39.6, "dissolve", {"rate": 0.35, "blur": 16, "dim": 0.5}),
 ]
 
 # Bagian gelap (kedip hitam) di klip pu_silver -> potongan digeser otomatis
 DIPS = {"pu_silver": [4.0, 8.0, 12.1, 16.5, 20.9, 24.6, 28.3, 31.8, 35.4, 38.9]}
-PREROLL = 0.75  # transisi mulai +-0.6 dtk sebelum potongan
+PREROLL = 0.5  # transisi mulai +-0.45 dtk sebelum potongan
 
 
 def avoid_dips(clip, t, dur, rate):
@@ -56,26 +72,29 @@ def avoid_dips(clip, t, dur, rate):
     return t
 
 
-# (bar_mulai, bar_selesai, gaya, data)
+# (ketukan_mulai, ketukan_selesai, gaya, data)
 TEXTS = [
-    (0.2, 1.9, "intro", {"a": "Setiap usaha", "b": "butuh partner yang bisa diandalkan."}),
-    (2.15, 3.95, "title", {"top": "DAIHATSU", "main": "GRAN MAX", "sub": "PICK UP  ·  BLIND VAN"}),
-    (4.15, 4.95, "lower", {"cat": "DESAIN", "main": "Bak luas & kokoh", "sub": "Siap angkut muatan harian"}),
-    (5.15, 5.95, "lower", {"cat": "MESIN", "main": "1.5L Dual VVT-i", "sub": "Bertenaga & efisien"}),
-    (6.15, 7.95, "lower", {"cat": "DAYA ANGKUT", "main": "Dimensi bak lega", "sub": "Bongkar muat lebih praktis"}),
-    (8.15, 8.95, "lower", {"cat": "KABIN", "main": "Lega & ergonomis", "sub": "Nyaman untuk perjalanan jauh"}),
-    (9.15, 10.95, "lower", {"cat": "FITUR", "main": "AC & Power Steering", "sub": "Dingin, ringan, tidak bikin capek"}),
-    (11.15, 11.95, "lower", {"cat": "FITUR", "main": "Head unit audio", "sub": "Teman di setiap perjalanan"}),
-    (12.15, 13.95, "statement", {"a": "Dirancang untuk", "b": "kerja keras."}),
-    (14.2, 15.9, "statement", {"a": "Terbukti", "b": "di lapangan."}),
-    (16.15, 17.95, "lower", {"cat": "PERFORMA", "main": "Muatan maksimal", "sub": "Tetap stabil & bandel"}),
-    (18.15, 18.95, "lower", {"cat": "ANDALAN", "main": "Pedagang & pengusaha", "sub": "Dari pasar sampai gudang"}),
-    (19.15, 20.95, "lower", {"cat": "VARIAN", "main": "Tersedia Blind Van", "sub": "Ruang kargo tertutup & aman"}),
-    (21.1, 21.95, "tagline", {"main": "GRAN MAX", "sub": "Teman setia usaha Anda."}),
+    (0.6, 7.6, "intro", {"a": "Setiap usaha", "b": "butuh partner yang bisa diandalkan."}),
+    (8.5, 15.6, "title", {"top": "DAIHATSU", "main": "GRAN MAX", "sub": "PICK UP  ·  BLIND VAN"}),
+    (16.4, 19.7, "lower", {"cat": "DESAIN", "main": "Bak luas & kokoh", "sub": "Siap angkut muatan harian"}),
+    (20.4, 23.7, "lower", {"cat": "MESIN", "main": "1.5L Dual VVT-i", "sub": "Bertenaga & efisien"}),
+    (24.4, 31.7, "lower", {"cat": "DAYA ANGKUT", "main": "Dimensi bak lega", "sub": "Bongkar muat lebih praktis"}),
+    (32.5, 39.6, "statement", {"a": "Dirancang untuk", "b": "kerja keras."}),
+    (40.4, 43.7, "lower", {"cat": "KABIN", "main": "Lega & ergonomis", "sub": "Nyaman untuk perjalanan jauh"}),
+    (44.4, 51.7, "lower", {"cat": "FITUR", "main": "AC & Power Steering", "sub": "Dingin, ringan, tidak bikin capek"}),
+    (52.4, 55.7, "lower", {"cat": "FITUR", "main": "Head unit audio", "sub": "Teman di setiap perjalanan"}),
+    (56.4, 59.7, "lower", {"cat": "KENYAMANAN", "main": "Jok empuk & rapi", "sub": "Betah seharian di jalan"}),
+    (60.4, 67.7, "lower", {"cat": "DAYA TAHAN", "main": "Bak rata & kuat", "sub": "Dibuat untuk dipakai kerja"}),
+    (68.4, 71.7, "lower", {"cat": "SIAP KERJA", "main": "Langsung jalan", "sub": "Dari dealer ke tempat usaha"}),
+    (72.5, 79.6, "statement", {"a": "Terbukti", "b": "di lapangan."}),
+    (80.4, 87.7, "lower", {"cat": "PERFORMA", "main": "Muatan maksimal", "sub": "Tetap stabil & bandel"}),
+    (88.4, 95.7, "lower", {"cat": "ANDALAN", "main": "Pedagang & pengusaha", "sub": "Dari pasar sampai gudang"}),
+    (96.4, 103.7, "lower", {"cat": "VARIAN", "main": "Tersedia Blind Van", "sub": "Ruang kargo tertutup & aman"}),
+    (104.5, 111.7, "tagline", {"main": "GRAN MAX", "sub": "Teman setia usaha Anda."}),
 ]
 
 CTA = {
-    "bar": 22,
+    "beat": 112,
     "brand": "DAIHATSU GRAN MAX",
     "tag": "Teman setia usaha Anda.",
     "promo": ["Promo Akhir Tahun", "DP Ringan", "Angsuran Bersahabat"],
@@ -85,7 +104,7 @@ CTA = {
     "fine": "*Syarat & ketentuan berlaku",
 }
 
-TR_LEN = {"dissolve": 18, "slide": 20, "zoom": 18, "black": 24, "none": 0}
+TR_LEN = {"dissolve": 12, "slide": 14, "zoom": 12, "black": 20, "none": 0}
 
 
 def build():
@@ -104,10 +123,10 @@ def build():
         shots.append(d)
     texts = [{"f": fr(a), "d": fr(b) - fr(a), "style": st, **data} for a, b, st, data in TEXTS]
     cta = dict(CTA)
-    cta["f"] = fr(cta.pop("bar"))
+    cta["f"] = fr(cta.pop("beat"))
     cta["d"] = DUR - cta["f"]
-    out = {"fps": FPS, "barFrames": BAR_F, "durationInFrames": DUR, "shots": shots, "texts": texts, "cta": cta,
-           "bars": [fr(b) for b in range(25)]}
+    out = {"fps": FPS, "durationInFrames": DUR, "music": MUSIC, "shots": shots, "texts": texts, "cta": cta,
+           "bars": [fr(4 * k) for k in range(33)]}
     path = os.path.join(ROOT, "src", "iklan.json")
     json.dump(out, open(path, "w"), indent=1)
     print("saved", path)

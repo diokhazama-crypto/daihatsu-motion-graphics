@@ -8,12 +8,12 @@ Potongan, zoom, flash dan teks semuanya dikunci ke ketukan lagu.
 | ID | Isi | Durasi |
 |----|-----|--------|
 | `GranMaxPromo` | v1-v2: jedag jedug TikTok, sinkron lagu MP3 | 60 detik |
-| `GranMaxIklan` | v3: iklan profesional, musik cinematic (disintesis, bebas hak cipta) | 60 detik |
+| `GranMaxIklan` | v3: iklan profesional, pakai lagu MP3 yang sama, potongan tiap bar | 60 detik |
 
 Render versi 3:
 
 ```bash
-python3 scripts/make_iklan_music.py   # public/iklan_music.wav
+python3 scripts/prep_music.py assets/lagu.mp3   # public/music.wav (lagu MP3, sama dgn v1-v2)
 python3 scripts/build_iklan.py        # src/iklan.json (edit SHOTS/TEXTS/CTA di sini)
 npx remotion render GranMaxIklan out/granmax_iklan.mp4 --crf=18
 ```

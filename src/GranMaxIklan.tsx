@@ -20,7 +20,7 @@ import {
 } from "remotion";
 import data from "./iklan.json";
 
-// Gaya iklan profesional: gerak pelan, dissolve, tipografi bersih.
+// Gaya iklan profesional: gerak pelan, dissolve, tipografi bersih. Musik: lagu MP3 (130 BPM).
 const RED = "#D7001B";
 const SANS = "Montserrat, Arial, sans-serif";
 const SERIF = "'Playfair Display', Georgia, serif";
@@ -331,7 +331,7 @@ export const GranMaxIklan: React.FC = () => {
         <EndCard />
       </Sequence>
       <Grain />
-      <Audio src={staticFile("iklan_music.wav")} />
+      <Audio src={staticFile(data.music)} />
     </AbsoluteFill>
   );
 };

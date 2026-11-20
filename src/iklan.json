@@ -1,296 +1,356 @@
 {
  "fps": 30,
- "barFrames": 75,
- "durationInFrames": 1815,
+ "durationInFrames": 1811,
+ "music": "music.wav",
  "shots": [
   {
    "f": 0,
-   "d": 150,
+   "d": 114,
    "clip": "pu_silver",
    "t": 4.8,
    "in": "none",
    "ov": 0,
-   "rate": 0.6
+   "rate": 0.75
   },
   {
-   "f": 150,
-   "d": 150,
+   "f": 114,
+   "d": 111,
    "clip": "pu_silver",
    "t": 39.7,
    "in": "black",
-   "ov": 24,
-   "rate": 0.6
+   "ov": 20,
+   "rate": 0.7
   },
   {
-   "f": 300,
-   "d": 75,
+   "f": 225,
+   "d": 55,
    "clip": "pu_silver",
    "t": 8.88,
    "in": "dissolve",
-   "ov": 18,
-   "rate": 0.7
+   "ov": 12,
+   "rate": 0.8
   },
   {
-   "f": 375,
-   "d": 75,
+   "f": 280,
+   "d": 55,
    "clip": "pu_silver",
    "t": 32.67,
    "in": "slide",
-   "ov": 20,
-   "rate": 0.7
+   "ov": 14,
+   "rate": 0.8
   },
   {
-   "f": 450,
-   "d": 75,
+   "f": 335,
+   "d": 56,
    "clip": "pu_silver",
    "t": 25.48,
    "in": "dissolve",
-   "ov": 18,
-   "rate": 0.7
+   "ov": 12,
+   "rate": 0.8
   },
   {
-   "f": 525,
-   "d": 75,
+   "f": 391,
+   "d": 55,
    "clip": "pu_silver",
    "t": 36.27,
    "in": "slide",
-   "ov": 20,
-   "rate": 0.7
+   "ov": 14,
+   "rate": 0.8
   },
   {
-   "f": 600,
-   "d": 75,
+   "f": 446,
+   "d": 111,
+   "clip": "detail",
+   "t": 95.5,
+   "in": "black",
+   "ov": 20,
+   "rate": 0.8
+  },
+  {
+   "f": 557,
+   "d": 55,
    "clip": "pu_silver",
    "t": 12.97,
    "in": "dissolve",
-   "ov": 18,
-   "rate": 0.7
+   "ov": 12,
+   "rate": 0.8
   },
   {
-   "f": 675,
-   "d": 75,
+   "f": 612,
+   "d": 56,
    "clip": "detail",
    "t": 28.0,
    "in": "dissolve",
-   "ov": 18,
+   "ov": 12,
    "rate": 0.9
   },
   {
-   "f": 750,
-   "d": 75,
+   "f": 668,
+   "d": 55,
    "clip": "detail",
    "t": 20.0,
    "in": "slide",
-   "ov": 20,
+   "ov": 14,
    "rate": 0.9
   },
   {
-   "f": 825,
-   "d": 75,
+   "f": 723,
+   "d": 56,
    "clip": "detail",
    "t": 37.0,
    "in": "dissolve",
-   "ov": 18,
+   "ov": 12,
    "rate": 0.9
   },
   {
-   "f": 900,
-   "d": 75,
+   "f": 779,
+   "d": 55,
    "clip": "detail",
    "t": 85.0,
-   "in": "black",
-   "ov": 24,
+   "in": "slide",
+   "ov": 14,
+   "rate": 0.9
+  },
+  {
+   "f": 834,
+   "d": 55,
+   "clip": "detail",
+   "t": 101.0,
+   "in": "dissolve",
+   "ov": 12,
+   "rate": 0.9
+  },
+  {
+   "f": 889,
+   "d": 56,
+   "clip": "pu_silver",
+   "t": 29.05,
+   "in": "slide",
+   "ov": 14,
    "rate": 0.8
   },
   {
-   "f": 975,
-   "d": 75,
+   "f": 945,
+   "d": 55,
    "clip": "detail",
-   "t": 95.5,
+   "t": 135.5,
    "in": "dissolve",
-   "ov": 18,
+   "ov": 12,
    "rate": 0.9
   },
   {
-   "f": 1050,
-   "d": 150,
+   "f": 1000,
+   "d": 111,
    "clip": "spbu",
    "t": 1.0,
    "in": "black",
-   "ov": 24,
+   "ov": 20,
    "rate": 0.9
   },
   {
-   "f": 1200,
-   "d": 75,
+   "f": 1111,
+   "d": 55,
    "clip": "pasar",
    "t": 0.2,
    "in": "dissolve",
-   "ov": 18,
-   "rate": 0.85
-  },
-  {
-   "f": 1275,
-   "d": 75,
-   "clip": "pasar",
-   "t": 4.6,
-   "in": "slide",
-   "ov": 20,
-   "rate": 0.85
-  },
-  {
-   "f": 1350,
-   "d": 75,
-   "clip": "spbu",
-   "t": 18.0,
-   "in": "dissolve",
-   "ov": 18,
+   "ov": 12,
    "rate": 0.9
   },
   {
-   "f": 1425,
-   "d": 75,
+   "f": 1166,
+   "d": 56,
+   "clip": "pasar",
+   "t": 4.6,
+   "in": "slide",
+   "ov": 14,
+   "rate": 0.9
+  },
+  {
+   "f": 1222,
+   "d": 55,
+   "clip": "spbu",
+   "t": 18.0,
+   "in": "dissolve",
+   "ov": 12,
+   "rate": 0.9
+  },
+  {
+   "f": 1277,
+   "d": 55,
+   "clip": "pasar",
+   "t": 10.5,
+   "in": "slide",
+   "ov": 14,
+   "rate": 0.9
+  },
+  {
+   "f": 1332,
+   "d": 56,
    "clip": "blindvan",
    "t": 32.0,
    "in": "zoom",
-   "ov": 18,
-   "rate": 0.6
+   "ov": 12,
+   "rate": 0.75
   },
   {
-   "f": 1500,
-   "d": 75,
+   "f": 1388,
+   "d": 55,
    "clip": "blindvan",
    "t": 50.8,
    "in": "dissolve",
-   "ov": 18,
+   "ov": 12,
    "rate": 0.8
   },
   {
-   "f": 1575,
-   "d": 75,
+   "f": 1443,
+   "d": 111,
    "clip": "pu_silver",
    "t": 40.0,
-   "in": "dissolve",
-   "ov": 18,
-   "rate": 0.55
+   "in": "black",
+   "ov": 20,
+   "rate": 0.6
   },
   {
-   "f": 1650,
-   "d": 165,
-   "clip": "blindvan",
-   "t": 50.4,
-   "in": "black",
-   "ov": 24,
-   "rate": 0.5,
+   "f": 1554,
+   "d": 257,
+   "clip": "pu_silver",
+   "t": 39.6,
+   "in": "dissolve",
+   "ov": 12,
+   "rate": 0.35,
    "blur": 16,
    "dim": 0.5
   }
  ],
  "texts": [
   {
-   "f": 15,
-   "d": 127,
+   "f": 11,
+   "d": 97,
    "style": "intro",
    "a": "Setiap usaha",
    "b": "butuh partner yang bisa diandalkan."
   },
   {
-   "f": 161,
-   "d": 135,
+   "f": 121,
+   "d": 98,
    "style": "title",
    "top": "DAIHATSU",
    "main": "GRAN MAX",
    "sub": "PICK UP  \u00b7  BLIND VAN"
   },
   {
-   "f": 311,
-   "d": 60,
+   "f": 230,
+   "d": 46,
    "style": "lower",
    "cat": "DESAIN",
    "main": "Bak luas & kokoh",
    "sub": "Siap angkut muatan harian"
   },
   {
-   "f": 386,
-   "d": 60,
+   "f": 286,
+   "d": 45,
    "style": "lower",
    "cat": "MESIN",
    "main": "1.5L Dual VVT-i",
    "sub": "Bertenaga & efisien"
   },
   {
-   "f": 461,
-   "d": 135,
+   "f": 341,
+   "d": 101,
    "style": "lower",
    "cat": "DAYA ANGKUT",
    "main": "Dimensi bak lega",
    "sub": "Bongkar muat lebih praktis"
   },
   {
-   "f": 611,
-   "d": 60,
+   "f": 453,
+   "d": 98,
+   "style": "statement",
+   "a": "Dirancang untuk",
+   "b": "kerja keras."
+  },
+  {
+   "f": 563,
+   "d": 45,
    "style": "lower",
    "cat": "KABIN",
    "main": "Lega & ergonomis",
    "sub": "Nyaman untuk perjalanan jauh"
   },
   {
-   "f": 686,
-   "d": 135,
+   "f": 618,
+   "d": 101,
    "style": "lower",
    "cat": "FITUR",
    "main": "AC & Power Steering",
    "sub": "Dingin, ringan, tidak bikin capek"
   },
   {
-   "f": 836,
-   "d": 60,
+   "f": 729,
+   "d": 45,
    "style": "lower",
    "cat": "FITUR",
    "main": "Head unit audio",
    "sub": "Teman di setiap perjalanan"
   },
   {
-   "f": 911,
-   "d": 135,
-   "style": "statement",
-   "a": "Dirancang untuk",
-   "b": "kerja keras."
+   "f": 784,
+   "d": 46,
+   "style": "lower",
+   "cat": "KENYAMANAN",
+   "main": "Jok empuk & rapi",
+   "sub": "Betah seharian di jalan"
   },
   {
-   "f": 1065,
-   "d": 127,
+   "f": 839,
+   "d": 102,
+   "style": "lower",
+   "cat": "DAYA TAHAN",
+   "main": "Bak rata & kuat",
+   "sub": "Dibuat untuk dipakai kerja"
+  },
+  {
+   "f": 950,
+   "d": 46,
+   "style": "lower",
+   "cat": "SIAP KERJA",
+   "main": "Langsung jalan",
+   "sub": "Dari dealer ke tempat usaha"
+  },
+  {
+   "f": 1007,
+   "d": 98,
    "style": "statement",
    "a": "Terbukti",
    "b": "di lapangan."
   },
   {
-   "f": 1211,
-   "d": 135,
+   "f": 1116,
+   "d": 101,
    "style": "lower",
    "cat": "PERFORMA",
    "main": "Muatan maksimal",
    "sub": "Tetap stabil & bandel"
   },
   {
-   "f": 1361,
-   "d": 60,
+   "f": 1227,
+   "d": 101,
    "style": "lower",
    "cat": "ANDALAN",
    "main": "Pedagang & pengusaha",
    "sub": "Dari pasar sampai gudang"
   },
   {
-   "f": 1436,
-   "d": 135,
+   "f": 1338,
+   "d": 101,
    "style": "lower",
    "cat": "VARIAN",
    "main": "Tersedia Blind Van",
    "sub": "Ruang kargo tertutup & aman"
   },
   {
-   "f": 1582,
-   "d": 64,
+   "f": 1450,
+   "d": 100,
    "style": "tagline",
    "main": "GRAN MAX",
    "sub": "Teman setia usaha Anda."
@@ -308,34 +368,42 @@
   "name": "DIO DAIHATSU",
   "phone": "0822-5699-6949",
   "fine": "*Syarat & ketentuan berlaku",
-  "f": 1650,
-  "d": 165
+  "f": 1554,
+  "d": 257
  },
  "bars": [
   0,
-  75,
-  150,
+  59,
+  114,
+  169,
   225,
-  300,
-  375,
-  450,
-  525,
-  600,
-  675,
-  750,
-  825,
-  900,
-  975,
-  1050,
-  1125,
-  1200,
-  1275,
-  1350,
-  1425,
-  1500,
-  1575,
-  1650,
-  1725,
-  1800
+  280,
+  335,
+  391,
+  446,
+  502,
+  557,
+  612,
+  668,
+  723,
+  779,
+  834,
+  889,
+  945,
+  1000,
+  1055,
+  1111,
+  1166,
+  1222,
+  1277,
+  1332,
+  1388,
+  1443,
+  1498,
+  1554,
+  1609,
+  1665,
+  1720,
+  1775
  ]
 }
