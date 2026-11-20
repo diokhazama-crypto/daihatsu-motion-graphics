@@ -35,7 +35,7 @@ export type CineData = {
 export type CineOptions = {
   dir: string; // folder frame JPG di public/
   depthBlur?: boolean; // kaburkan pita atas (latar jauh)
-  look?: "teal" | "warm";
+  look?: "teal" | "warm" | "clean"; // clean = terang & netral (tanpa lapisan oranye)
 };
 
 export const createCinematic = (data: CineData, opt: CineOptions) => {
@@ -155,7 +155,10 @@ const ShotLayer: React.FC<{ i: number; f: number; layerOpacity?: number }> = ({ 
   const pos = f >= s.f ? fmap[f] ?? fmap[fmap.length - 1] : Math.max(0, fmap[s.f] - (s.f - f) * (s.r0 ?? 1) * SRC_FPS / FPS);
   opacity *= layerOpacity;
   const tf = `translateX(${tx}%) scale(${scale})`;
-  const grade = `blur(${blur}px) contrast(1.12) saturate(1.08) brightness(${bright})`;
+  const grade =
+    opt.look === "clean"
+      ? `blur(${blur}px) contrast(1.06) saturate(1.02) brightness(${bright * 1.1})`
+      : `blur(${blur}px) contrast(1.12) saturate(1.08) brightness(${bright})`;
   if (glitch > 0.02) {
     const off = 26 * glitch;
     const layer = (id: string, dx: number): React.CSSProperties => ({ transform: `translateX(${dx}px)`, filter: `url(#${id})`, mixBlendMode: "screen" });
@@ -211,7 +214,10 @@ const Grade: React.FC = () => (
       }}
     />}
     {/* teal & orange */}
-    {opt.look === "warm" ? (
+    {opt.look === "clean" ? (
+      // netralkan kuning: sedikit dingin, tanpa multiply yang menggelapkan
+      <AbsoluteFill style={{ background: "rgba(110,160,255,0.22)", mixBlendMode: "soft-light" }} />
+    ) : opt.look === "warm" ? (
       <>
         {/* siang terik -> golden hour: highlight hangat, bayangan sedikit dingin, kontras dijinakkan */}
         <AbsoluteFill style={{ background: "linear-gradient(165deg, rgba(255,170,80,0.35), rgba(255,120,40,0.08) 45%, rgba(20,60,90,0.30))", mixBlendMode: "soft-light" }} />
@@ -226,7 +232,9 @@ const Grade: React.FC = () => (
     <AbsoluteFill
       style={{
         background:
-          "radial-gradient(ellipse 85% 70% at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%), linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(0,0,0,0.12) 38%, transparent 55%, rgba(0,0,0,0.55))",
+          opt.look === "clean"
+            ? "radial-gradient(ellipse 90% 75% at 50% 50%, transparent 55%, rgba(0,0,0,0.28) 100%), linear-gradient(to bottom, rgba(0,0,0,0.28), transparent 32%, transparent 62%, rgba(0,0,0,0.38))"
+            : "radial-gradient(ellipse 85% 70% at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%), linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(0,0,0,0.12) 38%, transparent 55%, rgba(0,0,0,0.55))",
       }}
     />
   </>
@@ -264,7 +272,16 @@ const Flashes: React.FC = () => {
     <>
       <AbsoluteFill style={{ background: "#fff", mixBlendMode: "soft-light", opacity: pulse * 1.6 }} />
       <AbsoluteFill style={{ background: "#fff", opacity: pulse * 0.25 }} />
-      <AbsoluteFill style={{ background: "radial-gradient(ellipse at 30% 20%, rgba(255,140,40,0.9), rgba(255,60,0,0) 65%)", mixBlendMode: "screen", opacity: warm }} />
+      <AbsoluteFill
+        style={{
+          background:
+            opt.look === "clean"
+              ? "radial-gradient(ellipse at 30% 20%, rgba(255,250,240,0.8), rgba(255,255,255,0) 65%)"
+              : "radial-gradient(ellipse at 30% 20%, rgba(255,140,40,0.9), rgba(255,60,0,0) 65%)",
+          mixBlendMode: "screen",
+          opacity: warm,
+        }}
+      />
       <AbsoluteFill style={{ background: "#fff", opacity: a }} />
     </>
   );
