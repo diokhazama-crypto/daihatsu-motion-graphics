@@ -5,14 +5,15 @@
   lagu diputar 3 putaran (sambungan crossfade 20 ms), end card di drop putaran 3, lalu fade out
 Raungan mesin ikut speed ramp gambar: saat slow-mo suaranya melambat & jadi lebih berat.
 
-Pemakaian: python3 scripts/make_tanjakan_audio.py
-  butuh assets/lagu_tanjakan.mp3 dan assets/mesin_tanjakan.wav
-  (mesin: ffmpeg -i video.mp4 -vn -ac 2 -ar 44100 assets/mesin_tanjakan.wav)
-Output: public/tanjakan_audio.wav
+Pemakaian: python3 scripts/make_tanjakan_audio.py [nama]      (nama: tanjakan | kelebihan, default tanjakan)
+  butuh src/<nama>.json, assets/lagu_tanjakan.mp3 dan assets/mesin_<nama>.wav
+  (mesin: ffmpeg -i video.mp4 -vn -ac 2 -ar 44100 assets/mesin_<nama>.wav)
+Output: public/<audio di json>
 """
 import json
 import os
 import subprocess
+import sys
 import wave
 
 import numpy as np
@@ -20,7 +21,8 @@ from scipy.signal import butter, sosfilt
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SR = 44100
-TL = json.load(open(os.path.join(ROOT, "src", "tanjakan.json")))
+NAME = sys.argv[1] if len(sys.argv) > 1 else "tanjakan"
+TL = json.load(open(os.path.join(ROOT, "src", f"{NAME}.json")))
 FPS = TL["fps"]
 TOTAL = TL["durationInFrames"] / FPS
 N = int(round(TOTAL * SR))
@@ -59,7 +61,7 @@ for _ in range(passes - 1):
 place(music, seq, cold)
 
 # ------------------------------------------------------------------ mesin (ikut speed ramp)
-eng = load(os.path.join(ROOT, "assets", "mesin_tanjakan.wav")).mean(axis=1)
+eng = load(os.path.join(ROOT, "assets", f"mesin_{NAME}.wav")).mean(axis=1)
 fmap = np.array(TL["map"]) / TL["srcFps"]          # detik sumber per frame keluaran
 tout = np.arange(N) / SR
 src_t = np.interp(tout * FPS, np.arange(len(fmap)), fmap)
@@ -73,7 +75,8 @@ for s in TL["shots"][1:]:
 eng_out = filt(eng_out, 50, "high") * duck
 eng_out /= np.abs(eng_out).max()
 card = TL["cta"]["f"] / FPS
-pts = [(0, 0.0), (0.25, 1.4), (cold, 1.7), (cold + 0.4, 0.32), (card - 1, 0.3), (card, 0.12), (TOTAL, 0.0)]
+bed = SONG.get("engineBed", 0.32)       # level suara mesin di bawah lagu
+pts = [(0, 0.0), (0.25, 1.4), (cold, 1.7), (cold + 0.4, bed), (card - 1, bed * 0.95), (card, 0.12), (TOTAL, 0.0)]
 eng_out *= np.interp(tout, [p[0] for p in pts], [p[1] for p in pts])
 
 # ------------------------------------------------------------------ sfx kecil

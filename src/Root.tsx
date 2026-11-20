@@ -2,9 +2,11 @@ import { Composition } from "remotion";
 import { GranMaxPromo } from "./GranMaxPromo";
 import { GranMaxIklan } from "./GranMaxIklan";
 import { GranMaxTanjakan } from "./GranMaxTanjakan";
+import { GranMaxKelebihan } from "./GranMaxKelebihan";
 import timeline from "./timeline.json";
 import iklan from "./iklan.json";
 import tanjakan from "./tanjakan.json";
+import kelebihan from "./kelebihan.json";
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -32,6 +34,15 @@ export const RemotionRoot: React.FC = () => (
       component={GranMaxTanjakan}
       durationInFrames={tanjakan.durationInFrames}
       fps={tanjakan.fps}
+      width={1080}
+      height={1920}
+    />
+    {/* Versi 5: iklan profesional 5 kelebihan Gran Max, 60 fps */}
+    <Composition
+      id="GranMaxKelebihan"
+      component={GranMaxKelebihan}
+      durationInFrames={kelebihan.durationInFrames}
+      fps={kelebihan.fps}
       width={1080}
       height={1920}
     />

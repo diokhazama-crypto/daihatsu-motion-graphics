@@ -9,6 +9,7 @@ Potongan, zoom, flash dan teks semuanya dikunci ke ketukan lagu.
 |----|-----|--------|
 | `GranMaxPromo` | v1-v2: jedag jedug TikTok, sinkron lagu MP3 | 60 detik |
 | `GranMaxIklan` | v3: iklan profesional, pakai lagu MP3 yang sama, potongan tiap bar | 60 detik |
+| `GranMaxKelebihan` | v5: iklan profesional "5 kelebihan Gran Max", efek dikunci ke lagu, 60 fps | 44,7 detik |
 | `GranMaxTanjakan` | v4: cinematic TikTok, Gran Max angkut 2.900 kg sawit di tanjakan, 60 fps, lagu 3 putaran | 44,7 detik |
 
 Render versi 3:
@@ -35,6 +36,20 @@ npm run render:tanjakan                  # -> out/granmax_tanjakan.mp4
 Potongan v4 dikunci ke hentakan bass lagu (150 BPM): intro bass = "2.900 KG", break = slow-mo,
 DROP di 6,76 dtk lagu = teks kinetik. Lagu diputar 3 putaran: hook, cerita, hero + end card.
 Transisi: `black`, `flash`, `whip`, `punch`, `glitch` (RGB split), `cut`; speed ramp per shot (r0 -> r1).
+
+Render versi 5 (5 kelebihan Gran Max):
+
+```bash
+mkdir -p public/kelebihan && ffmpeg -i <video_mentah.mp4> -t 26 -vf "scale=1080:1920:flags=lanczos,unsharp=5:5:0.4" -q:v 3 -start_number 0 public/kelebihan/%04d.jpg
+ffmpeg -i <video_mentah.mp4> -vn -ac 2 -ar 44100 assets/mesin_kelebihan.wav
+python3 scripts/build_kelebihan.py              # src/kelebihan.json (edit SHOTS/TEXTS/CTA di sini)
+python3 scripts/make_tanjakan_audio.py kelebihan  # public/kelebihan_audio.wav
+npm run render:kelebihan                        # -> out/granmax_kelebihan.mp4
+```
+
+v4 & v5 memakai mesin bersama `src/Cinematic.tsx` (speed ramp, frame blending, transisi
+black/flash/whip/punch/glitch/dissolve, denyut cahaya per kick, grading, teks & end card) dan
+`scripts/cine_common.py` (peta ketukan lagu, penyusun timeline).
 
 ## Struktur
 
