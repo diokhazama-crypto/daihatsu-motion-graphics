@@ -9,7 +9,7 @@ import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FPS = 30
+FPS = 60
 T0 = 0.10521          # ketukan pertama di lagu (detik)
 BEAT = 0.461525       # 130 BPM
 TOTAL_SEC = 60.38     # panjang music.wav (lihat prep_music.py)
@@ -166,7 +166,7 @@ LOUD = ["a1", "b1", "a2", "b2"]
 
 # Bagian gelap (kedip hitam) di klip sumber, detik. Potongan digeser otomatis menjauhinya.
 DIPS = {"pu_silver": [4.0, 8.0, 12.1, 16.5, 20.9, 24.6, 28.3, 31.8, 35.4, 38.9]}
-PREROLL = 0.4  # transisi halus mulai +-0.3 dtk sebelum ketukan
+PREROLL = 0.5  # transisi halus mulai +-0.4 dtk sebelum ketukan
 
 
 def avoid_dips(clip, t, dur, rate):
