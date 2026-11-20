@@ -56,7 +56,12 @@ const outBack = Easing.out(Easing.back(1.8));
 
 // Denyut di setiap ketukan lagu -> w tepat di beat, turun cepat.
 // w diambil dari timeline (jedug di awal bar paling kuat).
+// TENANG = true -> tanpa guncangan & tanpa denyut zoom per ketukan (versi 2 "anti pusing").
+// Transisi antar-shot tetap sama.
+const TENANG = true;
+
 const beatPulse = (g: number) => {
+  if (TENANG) return 0;
   let b = beats[0];
   for (const x of beats) {
     if (x.f <= g) b = x;
@@ -235,6 +240,7 @@ const Vignette: React.FC = () => (
 
 const Shake: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const g = useCurrentFrame();
+  if (TENANG) return <AbsoluteFill>{children}</AbsoluteFill>;
   let amp = 0;
   for (const st of drops) {
     const l = g - st;
