@@ -9,6 +9,7 @@ Potongan, zoom, flash dan teks semuanya dikunci ke ketukan lagu.
 |----|-----|--------|
 | `GranMaxPromo` | v1-v2: jedag jedug TikTok, sinkron lagu MP3 | 60 detik |
 | `GranMaxIklan` | v3: iklan profesional, pakai lagu MP3 yang sama, potongan tiap bar | 60 detik |
+| `GranMaxPickup` | v6: "dari showroom sampai kebun" dari 4 klip, 30 fps | 44,7 detik |
 | `GranMaxKelebihan` | v5: iklan profesional "5 kelebihan Gran Max", efek dikunci ke lagu, 60 fps | 44,7 detik |
 | `GranMaxTanjakan` | v4: cinematic TikTok, Gran Max angkut 2.900 kg sawit di tanjakan, 60 fps, lagu 3 putaran | 44,7 detik |
 
@@ -47,7 +48,16 @@ python3 scripts/make_tanjakan_audio.py kelebihan  # public/kelebihan_audio.wav
 npm run render:kelebihan                        # -> out/granmax_kelebihan.mp4
 ```
 
-v4 & v5 memakai mesin bersama `src/Cinematic.tsx` (speed ramp, frame blending, transisi
+Render versi 6 (4 klip digabung):
+
+```bash
+python3 scripts/prep_multi.py pickup A=<kebun.mp4> B=<desa.mp4> C=<detail_asmr.mp4> D=<showroom.mp4>
+python3 scripts/build_pickup.py
+python3 scripts/make_tanjakan_audio.py pickup
+npm run render:pickup                           # -> out/granmax_pickup.mp4 (30 fps)
+```
+
+v4, v5 & v6 memakai mesin bersama `src/Cinematic.tsx` (speed ramp, frame blending, transisi
 black/flash/whip/punch/glitch/dissolve, denyut cahaya per kick, grading, teks & end card) dan
 `scripts/cine_common.py` (peta ketukan lagu, penyusun timeline).
 

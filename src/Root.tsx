@@ -3,10 +3,12 @@ import { GranMaxPromo } from "./GranMaxPromo";
 import { GranMaxIklan } from "./GranMaxIklan";
 import { GranMaxTanjakan } from "./GranMaxTanjakan";
 import { GranMaxKelebihan } from "./GranMaxKelebihan";
+import { GranMaxPickup } from "./GranMaxPickup";
 import timeline from "./timeline.json";
 import iklan from "./iklan.json";
 import tanjakan from "./tanjakan.json";
 import kelebihan from "./kelebihan.json";
+import pickup from "./pickup.json";
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -43,6 +45,15 @@ export const RemotionRoot: React.FC = () => (
       component={GranMaxKelebihan}
       durationInFrames={kelebihan.durationInFrames}
       fps={kelebihan.fps}
+      width={1080}
+      height={1920}
+    />
+    {/* Versi 6: dari showroom sampai kebun (4 klip), 30 fps */}
+    <Composition
+      id="GranMaxPickup"
+      component={GranMaxPickup}
+      durationInFrames={pickup.durationInFrames}
+      fps={pickup.fps}
       width={1080}
       height={1920}
     />

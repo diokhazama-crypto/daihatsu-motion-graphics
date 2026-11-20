@@ -31,8 +31,10 @@ def smooth(x):
     return x * x * (3 - 2 * x)
 
 
-def compile_timeline(name, shots_in, texts_in, cta_in, impacts, pulses, passes, src_frames, engine_bed=0.32):
+def compile_timeline(name, shots_in, texts_in, cta_in, impacts, pulses, passes, src_frames, engine_bed=0.32, fps=60):
     """shots_in: (detik_video, detik_sumber, r0, r1, transisi, ekstra). Simpan src/<name>.json."""
+    global FPS
+    FPS = fps
     total = fr(COLD + passes * SONG_END)
     starts = [fr(s[0]) for s in shots_in] + [total]
     shots, fmap = [], []
