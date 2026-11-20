@@ -110,7 +110,7 @@ CTA = {
     "promo": ["Promo Akhir Tahun", "DP Ringan", "Angsuran Bersahabat"],
     "contact": "Informasi & pemesanan",
     "name": "DIO DAIHATSU",
-    "phone": "0822-5699-6949",
+    "phone": "0811-549-6949",
     "fine": "*Syarat & ketentuan berlaku",
 }
 
