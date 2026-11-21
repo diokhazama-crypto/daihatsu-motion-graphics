@@ -31,7 +31,7 @@ const SH = [
   [T_REV, END, shotReveal, {}],
 ];
 const DUR = END / FPS; window.DUR = DUR;
-const FLIPS = [[6, 9], [T_REV, T_REV + 2], [120, 121]];      // red-black swaps (frames)
+const FLIPS = [[6, 9]];                                    // red-black swap only on the headlamp, never on Dio's face      // red-black swaps (frames)
 
 // sound events (mix.py reads events.json)
 const EV = [];
@@ -40,7 +40,7 @@ ev(0, 'sec', { name: 'flash' }); ev(T_RAIL, 'sec', { name: 'road' }); ev(T_SIL, 
 ev(0, 'hit', { p: 1 }); ev(6, 'blip'); ev(9, 'hit', { p: 1.12 }); ev(15, 'cut'); ev(18, 'hit', { p: 1.26 }); ev(24, 'blip');
 ev(27, 'hit', { p: 1.42 }); ev(30, 'hit', { p: 1.6 }); ev(33, 'slit'); ev(T_RAIL - 2, 'rush'); ev(T_RAIL, 'rail');
 for (let k = 0; k < 3; k++) ev(T_RAIL + k * BEAT, 'step', { k });
-ev(T_BAR, 'bar'); ev(T_SIL, 'tick'); ev(T_REV - 4, 'pre'); ev(T_REV - 1, 'snap'); ev(T_REV, 'reveal'); ev(120, 'blip');
+ev(T_BAR, 'bar'); ev(T_SIL, 'tick'); ev(T_REV - 4, 'pre'); ev(T_REV - 1, 'snap'); ev(T_REV, 'reveal');
 window.EV = EV.sort((a, b) => a.t - b.t);
 
 // ───────── Helpers ─────────
@@ -231,7 +231,7 @@ function shotDioSil(g, t, lt) {
   g.fillStyle = WHT; g.fillRect(PX, 0, PW, H);
   g.fillStyle = RED; g.fillRect(PX, 1180, PW, 12);
   const f = t * FPS, z = 1 + lt * .03, [jx, jy] = jitter(t, fl(lt) < 2 ? 8 : 1, 12);
-  const ghosts = f >= T_WHIP ? [1, 2, 3].map(k => headAng(t - k / (FPS * 3))) : [];
+  const ghosts = [];                                    // no ghost heads: the whip reads clean
   drawDio(g, 860 + jx, 1430 + jy, .8 * z, headAng(t), true, ghosts);
   g.restore();
   rail(g, t, 1);
@@ -264,7 +264,8 @@ window.TEXTS = t => { draw(t); return TXT.slice(); };
   Object.assign(IMG, buildCar());
   IMG.frontWht = silOf(IMG.front, WHT); IMG.sideSil = silOf(IMG.side, BLK);
   const dio = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('missing art/dio.png')); i.src = 'art/dio.png'; });
-  IMG.dioCol = layers(dio); IMG.dioSil = layers(dio, BLK);
+  const photo = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('missing art/dio_photo.png')); i.src = 'art/dio_photo.png'; });
+  IMG.dioCol = layers(photo); IMG.dioSil = layers(dio, BLK);
   window.render(0);
   window.READY = true;
 })();

@@ -91,3 +91,7 @@ Dio tidak digambar: Dio "berbicara" lewat rel merahnya (warna milik penutur).
 - Shot 11 baru (2,4–2,8 dtk): siluet hitam Dio di tepi kanan, di atas putih kertas, kepala miring menjauh (−0,35 rad). Di tengah hening: wind-up 2 frame, lalu whip 4 frame (≈130 ms) dengan tiga kepala bayangan 28 %, ditutup bunyi "krek" leher.
 - Shot 12 (2,8–5,0 dtk): Dio berwarna setengah badan, acungkan jempol, di depan kiri; Gran Max di belakang kanan. Kepala mengendap dengan 0,1·e^(−9t)·cos(26t), inversi merah-hitam 2 frame saat potongan.
 - Langkah mobil di jalan jadi 3 (1,2 / 1,6 / 2,0 dtk).
+
+## 11. Revisi 2: Dio memakai foto asli (detail)
+
+Gaya flat hasil konversi foto terlalu kehilangan detail ("kayak hantu"). Shot berwarna sekarang memakai foto asli Dio yang dipotong rapi (`tools/photo_cut.py` → `art/dio_photo.png`): wajah, kemeja, lanyard, logo di dada tetap utuh, sedikit kontras dan ketajaman, garis tepi hitam. Siluet saat menoleh tetap dari `art/dio.png`. Inversi merah-hitam pada wajah Dio dan kepala bayangan saat whip dihapus; inversi tinggal di insert lampu depan.

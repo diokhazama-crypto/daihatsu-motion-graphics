@@ -2,7 +2,7 @@ DIO — Sales Daihatsu (Text Flash Cuts), 5 s
 
 Picture: drawn in code (car.js, main.js), including the Gran Max; no generated or stock images.
 Dio: the user's own photo (src/dio.jpg), background removed with rembg (MIT; model isnet-general-use, Apache-2.0)
-     and flattened into the film's palette by tools/stylize.py.
+     cut out and graded by tools/photo_cut.py (colour shot); silhouette from tools/stylize.py.
 Fonts: Noto Serif SC 900 and Noto Sans SC 900 (Google Fonts), SIL Open Font License 1.1, subset in fonts/.
 Music samples: VS Chamber Orchestra Community Edition (Versilian Studios / Sam Gossner), CC0 1.0;
                Versilian Community Sample Library (Versilian Studios), CC0 1.0.
