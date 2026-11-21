@@ -20,7 +20,7 @@ import {
 
 // Video TikTok serah terima unit dari 1 foto. Foto SELALU full layar (tidak dijadikan kartu/tempelan),
 // teks putih polos. Gaya modern/premium: zoom halus, teks di belakang orang (orang dipisah dari latar),
-// portrait mode (latar blur, orang tajam), zoom blur di hentakan, garis cahaya anamorfik, light leak, bingkai sudut tipis.
+// garis cahaya anamorfik, light leak, bingkai sudut tipis. Tanpa blur (supaya potongan orang tetap rapi).
 // Waktu dikunci ke lagu 150 BPM (2 putaran): 0.05 bass | 2.04 break | 6.76 DROP | 14.355 putaran 2
 export const SERAH_FPS = 30;
 const SONG = 14.355;
@@ -161,18 +161,16 @@ const Corners: React.FC = () => {
 
 // ------------------------------------------------------------------ foto full layar
 // zoom: skala; cx/cy: titik fokus zoom (piksel layar); pop: orang sedikit lebih dekat dari latar
-const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number; blur?: number; bgBlur?: number; bright?: number; behind?: React.ReactNode; zblur?: number }> = ({
+const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number; blur?: number; bright?: number; behind?: React.ReactNode }> = ({
   zoom,
   cx = 540,
   cy = 1150,
   pop = 0,
   blur = 0,
-  bgBlur = 0,
   bright = 1,
   behind,
-  zblur = 0,
 }) => {
-  const layered = !!behind || bgBlur > 0.05;
+  const layered = !!behind;
   const filter = (extraBlur = 0) => `blur(${blur + extraBlur}px) brightness(${bright}) contrast(1.05) saturate(1.08)`;
   const img = (extra = 1, extraBlur = 0): React.CSSProperties => ({
     position: "absolute",
@@ -188,8 +186,7 @@ const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number
     <AbsoluteFill style={{ overflow: "hidden", transform: `scale(${z})` }}>
       {layered ? (
         <>
-          {/* latar sedikit diperbesar saat diblur supaya tepi tidak bocor */}
-          <Img src={BG} style={img(1 + bgBlur * 0.004, bgBlur)} />
+          <Img src={PHOTO} style={img()} />
           {behind}
           <Img src={FG} style={img(1 + pop)} />
         </>
@@ -201,12 +198,6 @@ const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number
   return (
     <AbsoluteFill style={{ background: "#000" }}>
       {body()}
-      {/* zoom blur: salinan diperbesar & transparan = kesan blur radial di hentakan */}
-      {zblur > 0.02 && [1, 2, 3, 4].map((i) => (
-        <AbsoluteFill key={i} style={{ opacity: 0.22 * zblur }}>
-          {body(1 + 0.035 * i * zblur)}
-        </AbsoluteFill>
-      ))}
       <AbsoluteFill style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.4), transparent 24%, transparent 58%, rgba(0,0,0,0.6))" }} />
     </AbsoluteFill>
   );
@@ -234,9 +225,6 @@ const Pass1: React.FC = () => {
   const settle = interpolate(dk, [0, S(0.5)], [1.25, 1.06], { ...clamp, easing: Easing.out(Easing.cubic) });
   const dropPush = ramp(f, S(7.3), S(14.3), Easing.linear);
   const zoom = drop ? settle + 0.06 * dropPush : (1.3 - 0.25 * intro + 0.06 * push) * (1 + 0.5 * build);
-  // zoom blur di hentakan drop & portrait mode (latar blur, orang tajam)
-  const zb = Math.max(0, ...[6.76, 8.21, 9.98, 10.59, 12.19].map((t, i) => (i === 0 ? 1 : 0.7) * interpolate(f, [S(t), S(t + 0.35)], [1, 0], clamp) * (f >= S(t) ? 1 : 0)));
-  const bgBlur = drop ? 10 * ramp(f, S(7.3), S(9.0), ease) : 0;
   const behindOut = interpolate(f, [S(5.8), S(6.3)], [1, 0], clamp);
   const ty = ramp(f, S(12.19), S(12.7));
   return (
@@ -244,10 +232,7 @@ const Pass1: React.FC = () => {
       <FullPhoto
         zoom={zoom}
         pop={drop ? 0 : 0.05 * intro}
-        blur={drop ? 0 : build * 12}
         bright={drop ? 1 : 1 + build * 0.8}
-        zblur={zb}
-        bgBlur={bgBlur}
         behind={
           !drop ? (
             <div style={{ position: "absolute", top: 340, left: 0, right: 0, opacity: behindOut }}>
@@ -307,8 +292,6 @@ const Pass2: React.FC = () => {
   const zoom = drop ? settle + 0.05 * ramp(dk, S(0.5), S(7.5), Easing.linear) : (1.7 - 0.6 * intro + 0.08 * drift) * (1 + 0.5 * build);
   const cx = drop ? 540 : interpolate(intro, [0, 1], [330, 540]);
   const cy = drop ? 1150 : interpolate(intro, [0, 1], [640, 1150]);
-  const zb = Math.max(0, ...[0.05, 6.76, 8.21, 9.98, 10.59, 12.19].map((t, i) => (i < 2 ? 1 : 0.7) * interpolate(f, [T(1, t), T(1, t + 0.35)], [1, 0], clamp) * (f >= T(1, t) ? 1 : 0)));
-  const bgBlur = drop ? 10 * ramp(dk, S(0.6), S(2.4), ease) : 0;
   const cta = ramp(f, T(1, 10.59), T(1, 11.1), outBack);
   return (
     <>
@@ -317,10 +300,7 @@ const Pass2: React.FC = () => {
         cx={cx}
         cy={cy}
         pop={drop ? 0 : 0.04 * intro}
-        blur={drop ? 0 : build * 12}
         bright={drop ? 1 : 1 + build * 0.8}
-        zblur={zb}
-        bgBlur={bgBlur}
         behind={
           !drop && k >= S(0.3) ? (
             <div style={{ position: "absolute", top: 330, left: 0, right: 0, opacity: interpolate(k, [S(5.8), S(6.3)], [1, 0], clamp) }}>
