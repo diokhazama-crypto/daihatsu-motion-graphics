@@ -19,7 +19,7 @@ import {
 } from "remotion";
 
 // Video TikTok serah terima unit dari 1 foto. Foto SELALU full layar (tidak dijadikan kartu/tempelan),
-// teks putih polos. Gaya modern/premium: zoom halus, teks di belakang orang (orang dipisah dari latar),
+// teks putih polos di depan foto (tanpa potongan orang). Gaya modern: zoom halus, kilatan di hentakan,
 // garis cahaya anamorfik, light leak, bingkai sudut tipis. Tanpa blur (supaya potongan orang tetap rapi).
 // Waktu dikunci ke lagu 150 BPM (2 putaran): 0.05 bass | 2.04 break | 6.76 DROP | 14.355 putaran 2
 export const SERAH_FPS = 30;
@@ -34,8 +34,6 @@ const GOLD = "#F5C451";
 const SANS = "Montserrat, Arial, sans-serif";
 const BIG = "Anton, Impact, sans-serif";
 const SERIF = "'Playfair Display', Georgia, serif";
-const BG = staticFile("serah/bg.jpg");
-const FG = staticFile("serah/fg.png");
 const PHOTO = staticFile("serah/foto.jpg");
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -160,17 +158,15 @@ const Corners: React.FC = () => {
 };
 
 // ------------------------------------------------------------------ foto full layar
-// zoom: skala; cx/cy: titik fokus zoom (piksel layar); pop: orang sedikit lebih dekat dari latar
-const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number; blur?: number; bright?: number; behind?: React.ReactNode }> = ({
+// zoom: skala; cx/cy: titik fokus zoom (piksel layar); behind: teks yang ditaruh di atas foto
+const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; blur?: number; bright?: number; behind?: React.ReactNode }> = ({
   zoom,
   cx = 540,
   cy = 1150,
-  pop = 0,
   blur = 0,
   bright = 1,
   behind,
 }) => {
-  const layered = !!behind;
   const filter = (extraBlur = 0) => `blur(${blur + extraBlur}px) brightness(${bright}) contrast(1.05) saturate(1.08)`;
   const img = (extra = 1, extraBlur = 0): React.CSSProperties => ({
     position: "absolute",
@@ -184,15 +180,8 @@ const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number
   });
   const body = (z = 1) => (
     <AbsoluteFill style={{ overflow: "hidden", transform: `scale(${z})` }}>
-      {layered ? (
-        <>
-          <Img src={PHOTO} style={img()} />
-          {behind}
-          <Img src={FG} style={img(1 + pop)} />
-        </>
-      ) : (
-        <Img src={PHOTO} style={img()} />
-      )}
+      <Img src={PHOTO} style={img()} />
+      {behind}
     </AbsoluteFill>
   );
   return (
@@ -224,19 +213,18 @@ const Pass1: React.FC = () => {
   const dk = f - S(6.76);
   const settle = interpolate(dk, [0, S(0.5)], [1.25, 1.06], { ...clamp, easing: Easing.out(Easing.cubic) });
   const dropPush = ramp(f, S(7.3), S(14.3), Easing.linear);
-  const zoom = drop ? settle + 0.06 * dropPush : (1.3 - 0.25 * intro + 0.06 * push) * (1 + 0.5 * build);
+  const zoom = drop ? settle + 0.06 * dropPush : (1.15 - 0.1 * intro + 0.06 * push) * (1 + 0.5 * build);
   const behindOut = interpolate(f, [S(5.8), S(6.3)], [1, 0], clamp);
   const ty = ramp(f, S(12.19), S(12.7));
   return (
     <>
       <FullPhoto
         zoom={zoom}
-        pop={drop ? 0 : 0.05 * intro}
         bright={drop ? 1 : 1 + build * 0.8}
         behind={
           !drop ? (
-            <div style={{ position: "absolute", top: 340, left: 0, right: 0, opacity: behindOut }}>
-              <WhiteText text="SELAMAT" size={235} p={ramp(f, S(0.15), S(1.5), Easing.linear)} stagger={0.1} spacing={2} />
+            <div style={{ position: "absolute", top: 285, left: 0, right: 0, opacity: behindOut }}>
+              <WhiteText text="SELAMAT" size={215} p={ramp(f, S(0.15), S(1.5), Easing.linear)} stagger={0.1} spacing={2} />
             </div>
           ) : undefined
         }
@@ -299,12 +287,11 @@ const Pass2: React.FC = () => {
         zoom={zoom}
         cx={cx}
         cy={cy}
-        pop={drop ? 0 : 0.04 * intro}
         bright={drop ? 1 : 1 + build * 0.8}
         behind={
           !drop && k >= S(0.3) ? (
-            <div style={{ position: "absolute", top: 330, left: 0, right: 0, opacity: interpolate(k, [S(5.8), S(6.3)], [1, 0], clamp) }}>
-              <WhiteText text="HAMID" size={300} p={ramp(k, S(0.3), S(1.4), Easing.linear)} stagger={0.12} />
+            <div style={{ position: "absolute", top: 200, left: 0, right: 0, opacity: interpolate(k, [S(5.8), S(6.3)], [1, 0], clamp) }}>
+              <WhiteText text="HAMID" size={260} p={ramp(k, S(0.3), S(1.4), Easing.linear)} stagger={0.12} />
             </div>
           ) : undefined
         }
