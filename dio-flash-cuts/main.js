@@ -1,5 +1,5 @@
 // "DIO — Sales Daihatsu": Text Flash Cuts, 5.0 s, 1080×1920, 30 fps, 150 BPM (12 frames a beat).
-// Everything is code: cards, rail, road, bar, inversion, editing, and the Gran Max itself (car.js: flat faces projected front 3/4 and side, a headlamp).
+// Code: cards, rail, road, bar, inversion, editing, and the Gran Max itself (car.js). Dio: the user's photo turned flat (tools/stylize.py → art/dio.png).
 import { lerp, seg, eo, eio, hash } from '/core/lib.js';
 import { buildCar } from './car.js';
 
@@ -26,7 +26,8 @@ const SH = [
   [27, 30, shotCard, { txt: 'GRAN', bg: RED, fg: WHT, size: 560, x: -40, y: 760 }],
   [30, 33, shotCard, { txt: 'MAX', bg: BLK, fg: RED, size: 700, x: 110, y: 1780 }],
   [33, 36, shotSlit, {}],
-  [36, T_REV, shotRoad, {}],
+  [36, T_BAR, shotRoad, {}],
+  [T_BAR, T_REV, shotDioSil, {}],
   [T_REV, END, shotReveal, {}],
 ];
 const DUR = END / FPS; window.DUR = DUR;
@@ -38,8 +39,8 @@ const ev = (f, type, o = {}) => EV.push({ t: fs(f), type, ...o });
 ev(0, 'sec', { name: 'flash' }); ev(T_RAIL, 'sec', { name: 'road' }); ev(T_SIL, 'sec', { name: 'silence' }); ev(T_REV, 'sec', { name: 'reveal' }); ev(END, 'sec', { name: 'end' });
 ev(0, 'hit', { p: 1 }); ev(6, 'blip'); ev(9, 'hit', { p: 1.12 }); ev(15, 'cut'); ev(18, 'hit', { p: 1.26 }); ev(24, 'blip');
 ev(27, 'hit', { p: 1.42 }); ev(30, 'hit', { p: 1.6 }); ev(33, 'slit'); ev(T_RAIL - 2, 'rush'); ev(T_RAIL, 'rail');
-for (let k = 0; k < 4; k++) ev(T_RAIL + k * BEAT, 'step', { k });
-ev(T_BAR, 'bar'); ev(T_SIL, 'tick'); ev(T_REV - 2, 'pre'); ev(T_REV, 'reveal'); ev(120, 'blip');
+for (let k = 0; k < 3; k++) ev(T_RAIL + k * BEAT, 'step', { k });
+ev(T_BAR, 'bar'); ev(T_SIL, 'tick'); ev(T_REV - 4, 'pre'); ev(T_REV - 1, 'snap'); ev(T_REV, 'reveal'); ev(120, 'blip');
 window.EV = EV.sort((a, b) => a.t - b.t);
 
 // ───────── Helpers ─────────
@@ -143,9 +144,9 @@ function road(g, lt, z) {
 }
 
 // the approach: the car silhouette is redrawn larger once per beat, never tweened; the WA bar slams in on the last step
-const STEPS = [[150, 960], [260, 1030], [430, 1150], [700, 1380]];   // [width, ground y] per beat
+const STEPS = [[150, 960], [300, 1050], [560, 1260]];   // [width, ground y] per beat
 function shotRoad(g, t, lt) {
-  const f = fl(lt), k = Math.min(3, Math.floor(f / BEAT));
+  const f = fl(lt), k = Math.min(2, Math.floor(f / BEAT));
   const z = 1 + lt * .05;
   road(g, lt, z);
   g.save(); g.beginPath(); g.rect(PX, 0, PW, H); g.clip();
@@ -182,14 +183,59 @@ function shotReveal(g, t, lt) {
     g.fillStyle = i === 1 ? RED : WHT; g.fillRect(x, 1150 + i * 26, 220, 6);
   }
   const f = fl(lt), [jx, jy] = jitter(t, f < 2 ? 10 : 0, 8);
-  drawImg(g, IMG.front, VPX + 110 + jx, 1235 + jy, 880, .5, 1);
+  drawImg(g, IMG.front, VPX + 230 + jx, 1200 + jy, 760, .5, 1);
   g.restore();
+  // Dio in colour, front left; the head settles from the whip (0.1·e^(−9t)·cos(26t), within 0.1 rad in colour)
+  drawDio(g, 590 + jx, 1440 + jy, .72 * z, headAng(t), false);
   // GRAN MAX: a small vertical note at the top right
   g.save(); g.translate(W - 46, 70); g.rotate(Math.PI / 2);
   text(g, 'GRAN MAX', 0, 0, `900 54px ${SANS}`, BLK, 'granmax');
   g.restore();
   rail(g, t, 1);
   bar(g, t, 1);
+}
+
+// ───────── Dio: the user's photo as a flat figure (tools/stylize.py → art/dio.png), split into body and head layers ─────────
+const DIO = { w: 940, h: 1480, pivot: [505, 545], head: [[310, 40], [680, 40], [680, 430], [600, 470], [575, 545], [430, 545], [410, 470], [310, 430]] };
+function layers(im, col) {
+  const src = col ? silOf(im, col) : im;
+  const head = mk(im.width, im.height), hg = head.getContext('2d');
+  hg.beginPath(); DIO.head.forEach(([x, y], i) => i ? hg.lineTo(x, y) : hg.moveTo(x, y)); hg.closePath(); hg.clip(); hg.drawImage(src, 0, 0);
+  const body = mk(im.width, im.height), bg = body.getContext('2d');
+  bg.drawImage(src, 0, 0); bg.globalCompositeOperation = 'destination-out';
+  bg.beginPath(); DIO.head.forEach(([x, y], i) => i ? bg.lineTo(x, y) : bg.moveTo(x, y)); bg.closePath(); bg.fill();
+  return { head, body };
+}
+// head angle over time (radians): tilted away in silhouette → wind-up → whip with overshoot → settle in colour
+const T_WIND = 78, T_WHIP = 80;
+function headAng(t) {
+  const f = t * FPS;
+  if (f < T_WIND) return -.35;
+  if (f < T_WHIP) return lerp(-.35, -.42, (f - T_WIND) / (T_WHIP - T_WIND));
+  if (f < T_REV) { const u = (f - T_WHIP) / (T_REV - T_WHIP); return lerp(-.42, .1, u * u * (3 - 2 * u)); }
+  const tt = (f - T_REV) / FPS; return .1 * Math.exp(-9 * tt) * Math.cos(26 * tt);
+}
+// bottom-centre anchor (x, y); ghosts = earlier head angles drawn at 28 %
+function drawDio(g, x, y, s, ang, sil, ghosts = []) {
+  const L = sil ? IMG.dioSil : IMG.dioCol, [px, py] = DIO.pivot;
+  g.save(); g.translate(x - DIO.w / 2 * s, y - DIO.h * s); g.scale(s, s);
+  g.drawImage(L.body, 0, 0);
+  const head = a => { g.save(); g.translate(px, py); g.rotate(a); g.translate(-px, -py); g.drawImage(L.head, 0, 0); g.restore(); };
+  g.globalAlpha = .28; ghosts.forEach(head); g.globalAlpha = 1;
+  head(ang);
+  g.restore();
+}
+// silence: Dio as a black silhouette at the right edge on paper white, head tilted away; the whip happens here
+function shotDioSil(g, t, lt) {
+  g.save(); g.beginPath(); g.rect(PX, 0, PW, H); g.clip();
+  g.fillStyle = WHT; g.fillRect(PX, 0, PW, H);
+  g.fillStyle = RED; g.fillRect(PX, 1180, PW, 12);
+  const f = t * FPS, z = 1 + lt * .03, [jx, jy] = jitter(t, fl(lt) < 2 ? 8 : 1, 12);
+  const ghosts = f >= T_WHIP ? [1, 2, 3].map(k => headAng(t - k / (FPS * 3))) : [];
+  drawDio(g, 860 + jx, 1430 + jy, .8 * z, headAng(t), true, ghosts);
+  g.restore();
+  rail(g, t, 1);
+  bar(g, t, lt);
 }
 
 // ───────── Red-black swap (never RGB inversion): grayscale → contrast → invert → multiply red ─────────
@@ -217,6 +263,8 @@ window.TEXTS = t => { draw(t); return TXT.slice(); };
   await Promise.all([`900 300px ${SERIF}`, `900 50px ${SANS}`].map(f => document.fonts.load(f, 'DIOSALESDAIHATSUGRANMAXWA0123456789-')));
   Object.assign(IMG, buildCar());
   IMG.frontWht = silOf(IMG.front, WHT); IMG.sideSil = silOf(IMG.side, BLK);
+  const dio = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('missing art/dio.png')); i.src = 'art/dio.png'; });
+  IMG.dioCol = layers(dio); IMG.dioSil = layers(dio, BLK);
   window.render(0);
   window.READY = true;
 })();

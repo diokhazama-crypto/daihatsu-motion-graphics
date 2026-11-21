@@ -84,3 +84,10 @@ Transisi suara: whoosh rel mulai 2 frame sebelum cut (J‑cut); ekor tam‑tam b
 Atas permintaan pengguna, tidak memakai image generator: Gran Max dibangun di `car.js` sebagai model sederhana dari bidang datar (kabin cab-over, kaca depan besar, bak datar, roda, lampu, garis merah), lalu diproyeksikan dua cara: depan 3/4 sudut rendah (perspektif) dan samping murni. Lampu depan close-up digambar terpisah sebagai bidang-bidang datar. Warna: putih kertas, satu nada bayangan, garis hitam, aksen merah; tanpa gradien, tanpa glow. Siluet dibuat dari gambar yang sama (`source-in`), jadi mobil bisa hitam, putih atau berwarna tanpa gambar baru.
 
 Dio tidak digambar: Dio "berbicara" lewat rel merahnya (warna milik penutur).
+
+## 10. Revisi: Dio setengah badan (dari foto pengguna)
+
+- Sumber: foto Dio dari pengguna (`src/dio.jpg`). Latar showroom dibuang dengan rembg (isnet-general-use → `src/dio_mask.png`), lalu `tools/stylize.py` mengubahnya jadi figur flat: kemeja hitam + satu nada gelap, kulit dua nada, rambut dan fitur hitam, lanyard merah, kartu ID dan kertas di saku putih kertas, garis tepi hitam seragam. Mulut digambar ulang sebagai satu garis senyum tertutup. Hasilnya `art/dio.png`.
+- Shot 11 baru (2,4–2,8 dtk): siluet hitam Dio di tepi kanan, di atas putih kertas, kepala miring menjauh (−0,35 rad). Di tengah hening: wind-up 2 frame, lalu whip 4 frame (≈130 ms) dengan tiga kepala bayangan 28 %, ditutup bunyi "krek" leher.
+- Shot 12 (2,8–5,0 dtk): Dio berwarna setengah badan, acungkan jempol, di depan kiri; Gran Max di belakang kanan. Kepala mengendap dengan 0,1·e^(−9t)·cos(26t), inversi merah-hitam 2 frame saat potongan.
+- Langkah mobil di jalan jadi 3 (1,2 / 1,6 / 2,0 dtk).

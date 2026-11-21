@@ -81,6 +81,10 @@ for e in EV:
     elif k == 'bar': add(dry, slam(), t, .5); add(dry, hit(1.8), t, .2)
     elif k == 'tick': x = Sm.hit('woodblock', 'b', .85); add(dry, x, t, .9, .3); add(wet, x, t, .8)
     elif k == 'pre': add(dry, swell(.07), t - .01, .3)
+    elif k == 'snap':                # neck crack: low clack + click + noise transient
+        a = sfx.clack(.55, 1); b = np.pad(sfx.click(.8, .8), (int(.012 * SR), 0)); mm = max(len(a), len(b))
+        x = norm(np.pad(a, (0, mm - len(a))) + np.pad(b, (0, mm - len(b))) + hp(noise(mm / SR), 1500)[:mm] * env_exp(mm / SR, .003)[:mm])
+        add(dry, x, t, .8); add(wet, x, t, .5)
     elif k == 'reveal': x = hit(.72); add(dry, x, t, .6); add(wet, x, t, .8); add(dry, sfx.thump(1, 38), t, .9); add(dry, latch(), t + .25, .35, .3)
 
 # ambience: a thin night wind under the road and the reveal
@@ -100,7 +104,7 @@ gate = mask(sil + .015, rev - .075)
 music = (mus * .62 + mus_wet * .16) * gate[:, None]
 fx = dry + wet * .3
 tick_t = sil
-keep = ((x >= tick_t - .01) & (x < tick_t + .2)) | (x >= rev - .08)
+keep = ((x >= tick_t - .01) & (x < tick_t + .2)) | (x >= rev - .14)
 fx = fx * np.maximum(gate, keep.astype(float))[:, None]
 mix = music + fx + amb * gate[:, None]
 fade = np.clip((DUR - x) / .12, 0, 1); mix *= fade[:, None]
