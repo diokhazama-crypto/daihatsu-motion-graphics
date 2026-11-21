@@ -156,7 +156,7 @@ CTA = {
     "line1": "DP RINGAN",
     "line2": "ANGSURAN BERSAHABAT",
     "name": "DIO DAIHATSU",
-    "phone": "0822-5699-6949",
+    "phone": "0811-549-6949",
     "note": "Chat WA sekarang!",
 }
 
