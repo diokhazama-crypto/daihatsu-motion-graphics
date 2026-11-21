@@ -19,8 +19,8 @@ import {
 } from "remotion";
 
 // Video TikTok serah terima unit dari 1 foto. Foto SELALU full layar (tidak dijadikan kartu/tempelan),
-// teks putih polos. Efek: zoom halus, teks di belakang orang (orang dipisah dari latar), kilatan di hentakan,
-// confetti, kembang api, shockwave, lens flare, glitch sesaat, partikel cahaya.
+// teks putih polos. Gaya modern/premium: zoom halus, teks di belakang orang (orang dipisah dari latar),
+// portrait mode (latar blur, orang tajam), zoom blur di hentakan, garis cahaya anamorfik, light leak, bingkai sudut tipis.
 // Waktu dikunci ke lagu 150 BPM (2 putaran): 0.05 bass | 2.04 break | 6.76 DROP | 14.355 putaran 2
 export const SERAH_FPS = 30;
 const SONG = 14.355;
@@ -66,179 +66,19 @@ const Reveal: React.FC<{ p: number; children: React.ReactNode; style?: React.CSS
 const shadow = "0 6px 30px rgba(0,0,0,0.6)";
 
 // ------------------------------------------------------------------ partikel & efek cahaya
-const Bokeh: React.FC<{ n?: number; seed?: string }> = ({ n = 26, seed = "bk" }) => {
-  const f = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{ pointerEvents: "none", mixBlendMode: "screen" }}>
-      {Array.from({ length: n }).map((_, i) => {
-        const r = (s: string) => random(`${seed}${i}${s}`);
-        const size = 30 + r("s") * 110;
-        const x = ((r("x") * 1200 + f * (0.4 + r("v")) * 1.5) % 1300) - 110;
-        const y = 1920 - ((r("y") * 2000 + f * (0.6 + r("u") * 1.4)) % 2100);
-        const tw = 0.25 + 0.35 * Math.abs(Math.sin(f / (12 + r("t") * 20) + r("p") * 6));
-        return (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: x,
-              top: y,
-              width: size,
-              height: size,
-              borderRadius: 999,
-              background: r("c") > 0.5 ? "radial-gradient(circle, rgba(255,214,120,0.9), rgba(255,180,60,0) 70%)" : "radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,255,255,0) 70%)",
-              filter: `blur(${2 + r("b") * 6}px)`,
-              opacity: tw,
-            }}
-          />
-        );
-      })}
-    </AbsoluteFill>
-  );
-};
-
-const COLORS = [RED, "#ffffff", GOLD, "#ff5a6e", "#ffd86b"];
-// confetti 3D: tiap kertas berputar di sumbu X/Y (kelihatan membalik)
-const Confetti3D: React.FC<{ start: number; seed: string; n: number; x0?: number; y0?: number }> = ({ start, seed, n, x0 = 540, y0 = 760 }) => {
-  const f = useCurrentFrame();
-  const k = f - start;
-  if (k < 0 || k > S(5)) return null;
-  const t = k / SERAH_FPS;
-  return (
-    <AbsoluteFill style={{ pointerEvents: "none", perspective: 800 }}>
-      {Array.from({ length: n }).map((_, i) => {
-        const r = (s: string) => random(`${seed}${i}${s}`);
-        const ang = -Math.PI / 2 + (r("a") - 0.5) * 2.8;
-        const sp = 800 + r("v") * 1500;
-        const decay = (1 - Math.exp(-1.7 * t)) / 1.7;
-        const x = x0 + Math.cos(ang) * sp * decay + Math.sin(t * 3 + r("p") * 6) * 50 * t;
-        const y = y0 + Math.sin(ang) * sp * decay + 430 * t * t;
-        const w = 16 + r("w") * 16;
-        const op = interpolate(t, [0, 0.04, 3.5, 4.6], [0, 1, 1, 0], clamp);
-        return (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: x,
-              top: y,
-              width: w,
-              height: w * (0.45 + r("h") * 0.4),
-              background: COLORS[Math.floor(r("c") * COLORS.length)],
-              borderRadius: r("s") > 0.75 ? 999 : 2,
-              opacity: op,
-              transform: `rotateZ(${t * (150 + r("r") * 400)}deg) rotateX(${t * (300 + r("x") * 500)}deg) rotateY(${t * (200 + r("y") * 300)}deg)`,
-              boxShadow: "0 0 6px rgba(255,255,255,0.3)",
-            }}
-          />
-        );
-      })}
-    </AbsoluteFill>
-  );
-};
-
-// kembang api: partikel memancar + ekor + gravitasi
-const Firework: React.FC<{ start: number; x: number; y: number; seed: string; color?: string; n?: number }> = ({ start, x, y, seed, color = GOLD, n = 70 }) => {
-  const f = useCurrentFrame();
-  const k = f - start;
-  if (k < -S(0.4) || k > S(2.2)) return null;
-  // roket naik sebelum meledak
-  if (k < 0) {
-    const p = 1 + k / S(0.4);
-    return (
-      <div style={{ position: "absolute", left: x - 3, top: y + (1 - p) * 700, width: 6, height: 60, borderRadius: 3, background: `linear-gradient(to bottom, #fff, ${color}00)`, opacity: 0.9, mixBlendMode: "screen" }} />
-    );
-  }
-  const t = k / SERAH_FPS;
-  return (
-    <AbsoluteFill style={{ pointerEvents: "none", mixBlendMode: "screen" }}>
-      <div
-        style={{
-          position: "absolute",
-          left: x - 160,
-          top: y - 160,
-          width: 320,
-          height: 320,
-          borderRadius: 999,
-          background: `radial-gradient(circle, ${color}cc, transparent 65%)`,
-          opacity: interpolate(t, [0, 0.05, 0.4], [0, 1, 0], clamp),
-        }}
-      />
-      {Array.from({ length: n }).map((_, i) => {
-        const r = (s: string) => random(`${seed}${i}${s}`);
-        const ang = (i / n) * Math.PI * 2 + r("j") * 0.2;
-        const sp = 380 + r("v") * 260;
-        const decay = (1 - Math.exp(-2.2 * t)) / 2.2;
-        const px = x + Math.cos(ang) * sp * decay;
-        const py = y + Math.sin(ang) * sp * decay + 160 * t * t;
-        const vx = Math.cos(ang) * sp * Math.exp(-2.2 * t);
-        const vy = Math.sin(ang) * sp * Math.exp(-2.2 * t) + 320 * t;
-        const len = Math.min(70, Math.hypot(vx, vy) * 0.12) + 4;
-        const op = interpolate(t, [0, 0.05, 1.2, 1.9], [0, 1, 0.8, 0], clamp) * (0.6 + 0.4 * Math.abs(Math.sin(t * 30 + i)));
-        const c = r("c") > 0.7 ? "#ffffff" : color;
-        return (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: px,
-              top: py,
-              width: len,
-              height: 4,
-              borderRadius: 2,
-              background: `linear-gradient(to left, ${c}, ${c}00)`,
-              transformOrigin: "0 50%",
-              transform: `rotate(${(Math.atan2(vy, vx) * 180) / Math.PI + 180}deg)`,
-              opacity: op,
-              boxShadow: `0 0 8px ${c}`,
-            }}
-          />
-        );
-      })}
-    </AbsoluteFill>
-  );
-};
-
-const Shockwave: React.FC<{ start: number; y?: number }> = ({ start, y = 960 }) => {
-  const f = useCurrentFrame();
-  const k = f - start;
-  if (k < 0 || k > S(0.9)) return null;
-  const p = ramp(k, 0, S(0.9), Easing.out(Easing.cubic));
-  const r = 60 + p * 1300;
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 540 - r,
-        top: y - r,
-        width: r * 2,
-        height: r * 2,
-        borderRadius: 999,
-        border: `${(1 - p) * 26 + 2}px solid rgba(255,235,190,${(1 - p) * 0.9})`,
-        boxShadow: `0 0 60px rgba(255,200,120,${(1 - p) * 0.8}), inset 0 0 60px rgba(255,200,120,${(1 - p) * 0.6})`,
-      }}
-    />
-  );
-};
-
-const LensFlare: React.FC<{ start: number; dur?: number }> = ({ start, dur = S(1.6) }) => {
+// garis cahaya anamorfik (gaya lensa sinema): garis horizontal tipis biru-putih + inti lembut
+const Anamorphic: React.FC<{ start: number; dur?: number; y?: number }> = ({ start, dur = S(1.4), y = 560 }) => {
   const f = useCurrentFrame();
   const k = f - start;
   if (k < 0 || k > dur) return null;
   const p = k / dur;
-  const x = -300 + p * 1700;
-  const y = 380 + p * 260;
+  const x = interpolate(p, [0, 1], [-200, 1280], { easing: Easing.inOut(Easing.sin) });
   const a = Math.sin(p * Math.PI);
-  const ghost = (m: number, size: number, col: string) => (
-    <div style={{ position: "absolute", left: 540 + (540 - x) * m - size / 2, top: 960 + (960 - y) * m - size / 2, width: size, height: size, borderRadius: 999, background: col, opacity: a * 0.5 }} />
-  );
   return (
     <AbsoluteFill style={{ mixBlendMode: "screen", pointerEvents: "none" }}>
-      <div style={{ position: "absolute", left: x - 420, top: y - 6, width: 840, height: 12, borderRadius: 6, background: "linear-gradient(to right, transparent, rgba(160,200,255,0.9), transparent)", opacity: a, filter: "blur(2px)" }} />
-      <div style={{ position: "absolute", left: x - 200, top: y - 200, width: 400, height: 400, borderRadius: 999, background: "radial-gradient(circle, rgba(255,250,230,1), rgba(255,200,120,0.4) 25%, transparent 60%)", opacity: a }} />
-      {ghost(0.5, 90, "radial-gradient(circle, rgba(120,200,255,0.6), transparent 70%)")}
-      {ghost(0.9, 160, "radial-gradient(circle, rgba(255,160,80,0.4), transparent 70%)")}
-      {ghost(1.4, 60, "radial-gradient(circle, rgba(180,255,180,0.6), transparent 70%)")}
+      <div style={{ position: "absolute", left: x - 900, top: y - 3, width: 1800, height: 6, background: "linear-gradient(to right, transparent, rgba(120,180,255,0.85) 40%, rgba(255,255,255,1) 50%, rgba(120,180,255,0.85) 60%, transparent)", opacity: a, filter: "blur(1.5px)" }} />
+      <div style={{ position: "absolute", left: x - 900, top: y - 18, width: 1800, height: 36, background: "linear-gradient(to right, transparent, rgba(90,150,255,0.35) 45%, rgba(90,150,255,0.35) 55%, transparent)", opacity: a, filter: "blur(10px)" }} />
+      <div style={{ position: "absolute", left: x - 140, top: y - 140, width: 280, height: 280, borderRadius: 999, background: "radial-gradient(circle, rgba(255,255,255,0.9), rgba(160,200,255,0.25) 35%, transparent 65%)", opacity: a }} />
     </AbsoluteFill>
   );
 };
@@ -246,7 +86,7 @@ const LensFlare: React.FC<{ start: number; dur?: number }> = ({ start, dur = S(1
 const Flash: React.FC = () => {
   const f = useCurrentFrame();
   let a = 0;
-  for (const [h, k] of HITS) a = Math.max(a, k * interpolate(f, [h - 1, h, h + S(0.3)], [0, 0.95, 0], { ...clamp, easing: Easing.out(Easing.quad) }));
+  for (const [h, k] of HITS) a = Math.max(a, k * interpolate(f, [h - 1, h, h + S(0.3)], [0, 0.7, 0], { ...clamp, easing: Easing.out(Easing.quad) }));
   let pulse = 0;
   for (const p of [0, 1])
     for (const kk of KICKS) {
@@ -275,67 +115,66 @@ const Grain: React.FC = () => {
   );
 };
 
-// glitch RGB sesaat (dipakai di hentakan 9.98 & 10.44)
-const ChannelDefs: React.FC = () => (
-  <svg width={0} height={0} style={{ position: "absolute" }}>
-    <filter id="st-r"><feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" /></filter>
-    <filter id="st-g"><feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" /></filter>
-    <filter id="st-b"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" /></filter>
-  </svg>
-);
-const Glitch: React.FC<{ amount: number; children: React.ReactNode }> = ({ amount, children }) => {
-  if (amount < 0.02) return <>{children}</>;
-  const off = 30 * amount;
-  const L = (id: string, dx: number): React.CSSProperties => ({ transform: `translateX(${dx}px)`, filter: `url(#${id})`, mixBlendMode: "screen" });
-  return (
-    <AbsoluteFill style={{ background: "#000" }}>
-      <AbsoluteFill style={L("st-r", off)}>{children}</AbsoluteFill>
-      <AbsoluteFill style={L("st-g", 0)}>{children}</AbsoluteFill>
-      <AbsoluteFill style={L("st-b", -off)}>{children}</AbsoluteFill>
-    </AbsoluteFill>
-  );
-};
-
-// ------------------------------------------------------------------ teks putih polos (pop per huruf, tanpa 3D)
+// ------------------------------------------------------------------ teks putih polos: muncul dari balik masker, blur -> tajam
 const WhiteText: React.FC<{ text: string; size: number; p: number; stagger?: number; spacing?: number; color?: string }> = ({ text, size, p, stagger = 0.05, spacing = 4, color = "#fff" }) => (
-  <div style={{ display: "flex", justifyContent: "center", whiteSpace: "pre" }}>
+  <div style={{ display: "flex", justifyContent: "center", whiteSpace: "pre", filter: "drop-shadow(0 6px 22px rgba(0,0,0,0.5))" }}>
     {text.split("").map((ch, i) => {
-      const q = interpolate(p, [i * stagger, i * stagger + 0.3], [0, 1], { ...clamp, easing: outBack });
+      const q = interpolate(p, [i * stagger, i * stagger + 0.4], [0, 1], { ...clamp, easing: outQuint });
       return (
-        <div
-          key={i}
-          style={{
-            fontFamily: BIG,
-            fontSize: size,
-            lineHeight: 1.05,
-            letterSpacing: spacing,
-            color,
-            textShadow: "0 6px 26px rgba(0,0,0,0.55)",
-            opacity: Math.min(1, q * 2),
-            transform: `translateY(${(1 - q) * 50}px) scale(${0.6 + 0.4 * q})`,
-          }}
-        >
-          {ch}
+        <div key={i} style={{ overflow: "hidden", padding: "0 1px" }}>
+          <div
+            style={{
+              fontFamily: BIG,
+              fontSize: size,
+              lineHeight: 1.08,
+              letterSpacing: spacing,
+              color,
+              opacity: Math.min(1, q * 1.5),
+              transform: `translateY(${(1 - q) * 100}%)`,
+              filter: `blur(${(1 - q) * 10}px)`,
+            }}
+          >
+            {ch}
+          </div>
         </div>
       );
     })}
   </div>
 );
 
+// bingkai sudut tipis (gaya editorial / viewfinder)
+const Corners: React.FC = () => {
+  const f = useCurrentFrame();
+  const p = ramp(f, S(0.2), S(1.0));
+  const arm = 70 * p;
+  const m = 46;
+  const st = (pos: React.CSSProperties, bt: string, bl: string): React.CSSProperties => ({ position: "absolute", width: arm, height: arm, [bt]: "2px solid rgba(255,255,255,0.7)", [bl]: "2px solid rgba(255,255,255,0.7)", ...pos });
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      <div style={st({ left: m, top: m }, "borderTop", "borderLeft")} />
+      <div style={st({ right: m, top: m }, "borderTop", "borderRight")} />
+      <div style={st({ left: m, bottom: m }, "borderBottom", "borderLeft")} />
+      <div style={st({ right: m, bottom: m }, "borderBottom", "borderRight")} />
+    </AbsoluteFill>
+  );
+};
+
 // ------------------------------------------------------------------ foto full layar
 // zoom: skala; cx/cy: titik fokus zoom (piksel layar); pop: orang sedikit lebih dekat dari latar
-const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number; blur?: number; bright?: number; behind?: React.ReactNode; glitch?: number }> = ({
+const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number; blur?: number; bgBlur?: number; bright?: number; behind?: React.ReactNode; zblur?: number }> = ({
   zoom,
   cx = 540,
   cy = 1150,
   pop = 0,
   blur = 0,
+  bgBlur = 0,
   bright = 1,
   behind,
-  glitch = 0,
+  zblur = 0,
 }) => {
-  const filter = `blur(${blur}px) brightness(${bright}) contrast(1.05) saturate(1.08)`;
-  const img = (src: string, extra = 1): React.CSSProperties => ({
+  const layered = !!behind || bgBlur > 0.05;
+  const filter = (extraBlur = 0) => `blur(${blur + extraBlur}px) brightness(${bright}) contrast(1.05) saturate(1.08)`;
+  const img = (extra = 1, extraBlur = 0): React.CSSProperties => ({
     position: "absolute",
     width: 1440,
     height: 1920,
@@ -343,17 +182,34 @@ const FullPhoto: React.FC<{ zoom: number; cx?: number; cy?: number; pop?: number
     top: 0,
     transformOrigin: `${cx + 180}px ${cy}px`,
     transform: `scale(${zoom * extra})`,
-    filter,
+    filter: filter(extraBlur),
   });
-  const body = (
-    <AbsoluteFill style={{ overflow: "hidden", background: "#000" }}>
-      <Img src={behind ? BG : PHOTO} style={img(behind ? BG : PHOTO)} />
-      {behind}
-      {behind && <Img src={FG} style={img(FG, 1 + pop)} />}
+  const body = (z = 1) => (
+    <AbsoluteFill style={{ overflow: "hidden", transform: `scale(${z})` }}>
+      {layered ? (
+        <>
+          {/* latar sedikit diperbesar saat diblur supaya tepi tidak bocor */}
+          <Img src={BG} style={img(1 + bgBlur * 0.004, bgBlur)} />
+          {behind}
+          <Img src={FG} style={img(1 + pop)} />
+        </>
+      ) : (
+        <Img src={PHOTO} style={img()} />
+      )}
+    </AbsoluteFill>
+  );
+  return (
+    <AbsoluteFill style={{ background: "#000" }}>
+      {body()}
+      {/* zoom blur: salinan diperbesar & transparan = kesan blur radial di hentakan */}
+      {zblur > 0.02 && [1, 2, 3, 4].map((i) => (
+        <AbsoluteFill key={i} style={{ opacity: 0.22 * zblur }}>
+          {body(1 + 0.035 * i * zblur)}
+        </AbsoluteFill>
+      ))}
       <AbsoluteFill style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.4), transparent 24%, transparent 58%, rgba(0,0,0,0.6))" }} />
     </AbsoluteFill>
   );
-  return <Glitch amount={glitch}>{body}</Glitch>;
 };
 
 const LightLeak: React.FC = () => {
@@ -378,7 +234,9 @@ const Pass1: React.FC = () => {
   const settle = interpolate(dk, [0, S(0.5)], [1.25, 1.06], { ...clamp, easing: Easing.out(Easing.cubic) });
   const dropPush = ramp(f, S(7.3), S(14.3), Easing.linear);
   const zoom = drop ? settle + 0.06 * dropPush : (1.3 - 0.25 * intro + 0.06 * push) * (1 + 0.5 * build);
-  const g = f >= S(9.98) ? Math.max(interpolate(f, [S(9.98), S(10.12)], [1, 0], clamp), interpolate(f, [S(10.44), S(10.56)], [0.8, 0], clamp)) : 0;
+  // zoom blur di hentakan drop & portrait mode (latar blur, orang tajam)
+  const zb = Math.max(0, ...[6.76, 8.21, 9.98, 10.59, 12.19].map((t, i) => (i === 0 ? 1 : 0.7) * interpolate(f, [S(t), S(t + 0.35)], [1, 0], clamp) * (f >= S(t) ? 1 : 0)));
+  const bgBlur = drop ? 10 * ramp(f, S(7.3), S(9.0), ease) : 0;
   const behindOut = interpolate(f, [S(5.8), S(6.3)], [1, 0], clamp);
   const ty = ramp(f, S(12.19), S(12.7));
   return (
@@ -388,7 +246,8 @@ const Pass1: React.FC = () => {
         pop={drop ? 0 : 0.05 * intro}
         blur={drop ? 0 : build * 12}
         bright={drop ? 1 : 1 + build * 0.8}
-        glitch={g}
+        zblur={zb}
+        bgBlur={bgBlur}
         behind={
           !drop ? (
             <div style={{ position: "absolute", top: 340, left: 0, right: 0, opacity: behindOut }}>
@@ -398,7 +257,6 @@ const Pass1: React.FC = () => {
         }
       />
       <LightLeak />
-      <Bokeh n={16} />
       {!drop ? (
         <AbsoluteFill style={{ opacity: interpolate(f, [S(5.9), S(6.4)], [1, 0], clamp) }}>
           <div style={{ position: "absolute", top: 190, left: 0, right: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -428,13 +286,7 @@ const Pass1: React.FC = () => {
       )}
       {drop && (
         <>
-          <Firework start={S(8.21)} x={220} y={330} seed="fw1" color={GOLD} />
-          <Firework start={S(9.98)} x={870} y={420} seed="fw2" color="#ff5a6e" />
-          <Firework start={S(10.59)} x={540} y={260} seed="fw3" color="#ffffff" n={90} />
-          <Firework start={S(12.19)} x={300} y={480} seed="fw4" color={GOLD} />
-          <Shockwave start={S(6.76)} y={1000} />
-          <Confetti3D start={S(6.76)} seed="c1" n={110} y0={900} />
-          <LensFlare start={S(12.19)} />
+          <Anamorphic start={S(12.19)} />
         </>
       )}
     </>
@@ -455,7 +307,8 @@ const Pass2: React.FC = () => {
   const zoom = drop ? settle + 0.05 * ramp(dk, S(0.5), S(7.5), Easing.linear) : (1.7 - 0.6 * intro + 0.08 * drift) * (1 + 0.5 * build);
   const cx = drop ? 540 : interpolate(intro, [0, 1], [330, 540]);
   const cy = drop ? 1150 : interpolate(intro, [0, 1], [640, 1150]);
-  const g = Math.max(interpolate(f, [T(1, 9.98), T(1, 10.1)], [1, 0], clamp), interpolate(f, [T(1, 10.44), T(1, 10.56)], [0.8, 0], clamp)) * (f >= T(1, 9.98) ? 1 : 0);
+  const zb = Math.max(0, ...[0.05, 6.76, 8.21, 9.98, 10.59, 12.19].map((t, i) => (i < 2 ? 1 : 0.7) * interpolate(f, [T(1, t), T(1, t + 0.35)], [1, 0], clamp) * (f >= T(1, t) ? 1 : 0)));
+  const bgBlur = drop ? 10 * ramp(dk, S(0.6), S(2.4), ease) : 0;
   const cta = ramp(f, T(1, 10.59), T(1, 11.1), outBack);
   return (
     <>
@@ -466,7 +319,8 @@ const Pass2: React.FC = () => {
         pop={drop ? 0 : 0.04 * intro}
         blur={drop ? 0 : build * 12}
         bright={drop ? 1 : 1 + build * 0.8}
-        glitch={g}
+        zblur={zb}
+        bgBlur={bgBlur}
         behind={
           !drop && k >= S(0.3) ? (
             <div style={{ position: "absolute", top: 330, left: 0, right: 0, opacity: interpolate(k, [S(5.8), S(6.3)], [1, 0], clamp) }}>
@@ -476,7 +330,6 @@ const Pass2: React.FC = () => {
         }
       />
       <LightLeak />
-      <Bokeh n={16} seed="p2" />
       {!drop ? (
         <AbsoluteFill style={{ opacity: interpolate(k, [S(5.9), S(6.4)], [1, 0], clamp) }}>
           <div style={{ position: "absolute", bottom: 250, left: 0, right: 0, display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -518,16 +371,7 @@ const Pass2: React.FC = () => {
               <div style={{ fontFamily: SANS, fontWeight: 800, fontSize: 46, color: "#fff" }}>{PHONE}</div>
             </div>
           </div>
-          <Firework start={T(1, 7.2)} x={200} y={420} seed="fw5" color={GOLD} />
-          <Firework start={T(1, 8.21)} x={880} y={360} seed="fw6" color="#ff5a6e" />
-          <Firework start={T(1, 9.0)} x={540} y={230} seed="fw7" color="#ffffff" n={90} />
-          <Firework start={T(1, 9.98)} x={260} y={300} seed="fw8" color="#7fd3ff" />
-          <Firework start={T(1, 10.59)} x={820} y={500} seed="fw9" color={GOLD} n={90} />
-          <Firework start={T(1, 12.19)} x={540} y={380} seed="fw10" color="#ff5a6e" n={100} />
-          <Shockwave start={T(1, 6.76)} y={1000} />
-          <Confetti3D start={T(1, 6.76)} seed="c2" n={110} y0={900} />
-          <Confetti3D start={T(1, 10.59)} seed="c3" n={90} y0={700} />
-          <LensFlare start={T(1, 12.3)} dur={S(1.8)} />
+          <Anamorphic start={T(1, 12.3)} />
         </AbsoluteFill>
       )}
     </>
@@ -543,8 +387,10 @@ const SerahTerimaBase: React.FC<{ music: boolean }> = ({ music }) => {
   const scene = f < T(1, 0) ? <Pass1 /> : <Pass2 />;
   return (
     <AbsoluteFill style={{ background: "#000" }}>
-      <ChannelDefs />
       <AbsoluteFill style={{ opacity: endFade * fadeIn }}>{scene}</AbsoluteFill>
+      <AbsoluteFill style={{ opacity: endFade }}>
+        <Corners />
+      </AbsoluteFill>
       <Flash />
       <Grain />
       {music && (
