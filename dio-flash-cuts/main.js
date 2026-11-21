@@ -1,11 +1,11 @@
 // "DIO — Sales Daihatsu": Text Flash Cuts, 5.0 s, 1080×1920, 30 fps, 150 BPM (12 frames a beat).
-// 3 images from the user's image generator (Gran Max front 3/4, side, headlamp close-up) + code: cards, rail, road, bar, inversion, editing.
-import { clamp, lerp, seg, eo, eio, hash } from '/core/lib.js';
+// Everything is code: cards, rail, road, bar, inversion, editing, and the Gran Max itself (car.js: flat faces projected front 3/4 and side, a headlamp).
+import { lerp, seg, eo, eio, hash } from '/core/lib.js';
+import { buildCar } from './car.js';
 
 const W = 1080, H = 1920, FPS = 30, BEAT = 12;
 const RED = '#d4162b', BLK = '#0a0a0c', WHT = '#f2efe8', PALE = '#d8d4cc', DK = '#26262a', INK = '#1b1b1f';
 const SERIF = '"SerifX"', SANS = '"SansX"';
-const DEV = new URLSearchParams(location.search).has('dev');     // layout check only: grey boxes where the images go
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 const OUT = document.getElementById('out'), go = OUT.getContext('2d');
 const S = mk(W, H), g0 = S.getContext('2d');
@@ -59,10 +59,6 @@ function drawImg(g, im, x, y, w, ax = .5, ay = 1) {
   const h = w * im.height / im.width; g.drawImage(im, x - w * ax, y - h * ay, w, h);
 }
 function silOf(im, col) { const c = mk(im.width, im.height), x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = col; x.fillRect(0, 0, c.width, c.height); return c; }
-function placeholder(w, h, label) {        // dev only (?dev=1): never in a delivered render
-  const c = mk(w, h), x = c.getContext('2d'); x.fillStyle = '#7a7a7a'; x.fillRect(0, 0, w, h);
-  x.fillStyle = '#fff'; x.font = '900 60px sans-serif'; x.textAlign = 'center'; x.fillText(label, w / 2, h / 2); return c;
-}
 
 // ───────── Flash card: solid field, one giant word (bleeds), slam + jitter. Not in the reading check: every word is also held in full ─────────
 function shotCard(g, t, lt, o) {
@@ -87,7 +83,7 @@ function shotSide(g, t, lt) {
   g.fillStyle = WHT; g.fillRect(0, 0, W, H);
   const [jx, jy] = jitter(t, 6, 4);
   g.fillStyle = RED; g.fillRect(0, 1520, W, 14);
-  drawImg(g, IMG.sideSil, 640 + jx, 1950 + jy, 1500, .5, 1);
+  drawImg(g, IMG.sideSil, 560 + jx, 1880 + jy, 1250, .5, 1);
 }
 
 // red slit opening on black (the transition; never a fully black frame)
@@ -147,7 +143,7 @@ function road(g, lt, z) {
 }
 
 // the approach: the car silhouette is redrawn larger once per beat, never tweened; the WA bar slams in on the last step
-const STEPS = [[150, 960], [270, 1040], [480, 1190], [880, 1520]];   // [width, ground y] per beat
+const STEPS = [[150, 960], [260, 1030], [430, 1150], [700, 1380]];   // [width, ground y] per beat
 function shotRoad(g, t, lt) {
   const f = fl(lt), k = Math.min(3, Math.floor(f / BEAT));
   const z = 1 + lt * .05;
@@ -186,7 +182,7 @@ function shotReveal(g, t, lt) {
     g.fillStyle = i === 1 ? RED : WHT; g.fillRect(x, 1150 + i * 26, 220, 6);
   }
   const f = fl(lt), [jx, jy] = jitter(t, f < 2 ? 10 : 0, 8);
-  drawImg(g, IMG.front, VPX + 60 + jx, 1225 + jy, 1020, .5, 1);
+  drawImg(g, IMG.front, VPX + 110 + jx, 1235 + jy, 880, .5, 1);
   g.restore();
   // GRAN MAX: a small vertical note at the top right
   g.save(); g.translate(W - 46, 70); g.rotate(Math.PI / 2);
@@ -217,14 +213,10 @@ function draw(t) {
 window.render = t => { draw(t); go.drawImage(S, 0, 0); };
 window.TEXTS = t => { draw(t); return TXT.slice(); };
 
-const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('missing ' + src)); i.src = src; });
-const tryImg = (src, w, h, label) => loadImg(src).catch(e => { if (DEV) return placeholder(w, h, label); throw e; });
 (async () => {
   await Promise.all([`900 300px ${SERIF}`, `900 50px ${SANS}`].map(f => document.fonts.load(f, 'DIOSALESDAIHATSUGRANMAXWA0123456789-')));
-  const [front, side, lamp] = await Promise.all([
-    tryImg('assets/front.png', 1200, 900, 'front'), tryImg('assets/side.png', 1600, 700, 'side'), tryImg('assets/lamp.jpg', 1080, 1920, 'lamp')]);
-  Object.assign(IMG, { front, side, lamp });
-  IMG.frontWht = silOf(front, WHT); IMG.sideSil = silOf(side, BLK);
+  Object.assign(IMG, buildCar());
+  IMG.frontWht = silOf(IMG.front, WHT); IMG.sideSil = silOf(IMG.side, BLK);
   window.render(0);
   window.READY = true;
 })();

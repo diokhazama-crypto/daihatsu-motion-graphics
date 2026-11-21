@@ -1,0 +1,11 @@
+DIO — Sales Daihatsu (Text Flash Cuts), 5 s
+
+Picture: all drawn in code (car.js, main.js), including the Gran Max; no generated or stock images.
+Fonts: Noto Serif SC 900 and Noto Sans SC 900 (Google Fonts), SIL Open Font License 1.1, subset in fonts/.
+Music samples: VS Chamber Orchestra Community Edition (Versilian Studios / Sam Gossner), CC0 1.0;
+               Versilian Community Sample Library (Versilian Studios), CC0 1.0.
+               Instruments: harpsichord, contrabass, contrabass pizzicato, cello pizzicato, woodblock, timpani, bass drum,
+               gong, trombone, tuba, horn, glockenspiel, tubular bells.
+Sound effects: synthesised procedurally (numpy).
+Tools: Lemo-Opuscar library (render, mix, mux).
+Daihatsu and Gran Max are trademarks of their owners; their use here is the responsibility of the film's owner.

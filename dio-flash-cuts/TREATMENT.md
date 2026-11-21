@@ -79,12 +79,8 @@ Transisi suara: whoosh rel mulai 2 frame sebelum cut (J‑cut); ekor tam‑tam b
 - Tidak pernah di tengah frame: selalu di tepi, di rel, di bar, atau terpotong.
 - Kartu kilat hanya mengulang kata yang juga tampil penuh (DIO, SALES DAIHATSU di rel; GRAN MAX di bar akhir).
 
-## 9. Gambar (dibuat pengguna dengan image generator mereka sendiri)
+## 9. Gran Max digambar dengan kode
 
-Tiga gambar, tanpa teks/logo, latar hijau chroma kecuali insert:
+Atas permintaan pengguna, tidak memakai image generator: Gran Max dibangun di `car.js` sebagai model sederhana dari bidang datar (kabin cab-over, kaca depan besar, bak datar, roda, lampu, garis merah), lalu diproyeksikan dua cara: depan 3/4 sudut rendah (perspektif) dan samping murni. Lampu depan close-up digambar terpisah sebagai bidang-bidang datar. Warna: putih kertas, satu nada bayangan, garis hitam, aksen merah; tanpa gradien, tanpa glow. Siluet dibuat dari gambar yang sama (`source-in`), jadi mobil bisa hitam, putih atau berwarna tanpa gambar baru.
 
-1. `granmax_front.png`: Gran Max pick‑up, tampak depan 3/4, sudut rendah, seluruh bodi, latar `#00FF00`.
-2. `granmax_side.png`: tampak samping penuh, latar `#00FF00`.
-3. `headlamp.png`: close‑up ekstrem lampu depan, memenuhi frame (latar boleh polos gelap).
-
-Dio sendiri tidak digambar: Dio "berbicara" lewat rel merahnya (warna milik penutur), jadi tidak perlu tokoh yang dikarang.
+Dio tidak digambar: Dio "berbicara" lewat rel merahnya (warna milik penutur).
