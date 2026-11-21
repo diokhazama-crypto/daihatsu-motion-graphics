@@ -4,6 +4,7 @@ import { GranMaxIklan } from "./GranMaxIklan";
 import { GranMaxTanjakan } from "./GranMaxTanjakan";
 import { GranMaxKelebihan } from "./GranMaxKelebihan";
 import { GranMaxPickup } from "./GranMaxPickup";
+import { SerahTerima, SerahTerimaPolos, SERAH_DUR, SERAH_FPS } from "./SerahTerima";
 import timeline from "./timeline.json";
 import iklan from "./iklan.json";
 import tanjakan from "./tanjakan.json";
@@ -57,5 +58,8 @@ export const RemotionRoot: React.FC = () => (
       width={1080}
       height={1920}
     />
+    {/* Serah terima unit dari 1 foto, 30 fps: dengan lagu & tanpa musik (lagu ditambah di TikTok) */}
+    <Composition id="SerahTerima" component={SerahTerima} durationInFrames={SERAH_DUR} fps={SERAH_FPS} width={1080} height={1920} />
+    <Composition id="SerahTerimaPolos" component={SerahTerimaPolos} durationInFrames={SERAH_DUR} fps={SERAH_FPS} width={1080} height={1920} />
   </>
 );
