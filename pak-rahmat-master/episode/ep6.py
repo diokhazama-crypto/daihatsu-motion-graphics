@@ -227,18 +227,18 @@ def kabin(c, t, dpo, ofs=0.0):
     lib.sack(c, 330, 650, 130, 80); lib.sack(c, 620, 650, 130, 80)
     rrect(c, 60, 820, 960, 900, 80); fs(c, hx('#6B4A3A'), 8)                  # jok
     rrect(c, 120, 880, 840, 120, 40); fill(c, hx('#7E5847'))
-    person(c, 540, 1760 + ofs, 'rahmat', dpo, s=1.55, t=t)
-    c.save(); c.translate(540, 1500)                                            # setir
+    person(c, 540, 1980 + ofs, 'rahmat', dpo, s=2.5, t=t)
+    c.save(); c.translate(540, 1560)                                            # setir (proporsional dgn sopir)
     c.rotate(.12 * math.sin(t * 1.3))
-    c.set_line_width(34); c.arc(0, 0, 230, 0, 2 * math.pi); c.set_source_rgb(*OUT); c.stroke()
-    c.set_line_width(22); c.arc(0, 0, 230, 0, 2 * math.pi); c.set_source_rgb(*hx('#2B2D33')); c.stroke()
+    c.set_line_width(30); c.arc(0, 0, 175, 0, 2 * math.pi); c.set_source_rgb(*OUT); c.stroke()
+    c.set_line_width(19); c.arc(0, 0, 175, 0, 2 * math.pi); c.set_source_rgb(*hx('#2B2D33')); c.stroke()
     for a in (math.pi / 2, math.pi * 1.15, -math.pi * .15):
-        line(c, [(0, 0), (215 * math.cos(a), 215 * math.sin(a))], 26, hx('#2B2D33'))
-    ell(c, 0, 0, 60, 60); fs(c, hx('#3A3D44'), 6)
-    text(c, "D", 0, 0, 40, hx('#D7141A'))
+        line(c, [(0, 0), (163 * math.cos(a), 163 * math.sin(a))], 22, hx('#2B2D33'))
+    ell(c, 0, 0, 46, 46); fs(c, hx('#3A3D44'), 6)
+    text(c, "D", 0, 0, 32, hx('#D7141A'))
     c.restore()
-    c.rectangle(-50, 1620, 1180, 400); fs(c, hx('#3A3D44'), 8)                # dasbor
-    speaker(c, 900, 1720, .45, t)
+    c.rectangle(-50, 1680, 1180, 400); fs(c, hx('#3A3D44'), 8)                # dasbor
+    speaker(c, 900, 1790, .42, t)
     for sx in (-40, 1040):                                                      # pilar kaca depan
         poly(c, [(sx - 60, -50), (sx + 60, -50), (sx + 120 * (1 if sx < 0 else -1) + 60, 1650), (sx - 60, 1650)]); fs(c, hx('#E9ECEF'), 8)
     c.rectangle(-50, -50, 1180, 170); fs(c, hx('#E9ECEF'), 8)
@@ -430,12 +430,12 @@ def penutup(c, t):
     """TIM JOGET ATAU TIM NYINYIR? + TULIS DI KOMENTAR! + FOLLOW UNTUK EP 7 (tokoh tetap terlihat)."""
     if t < 35.86: return
     c.set_source_rgba(0, 0, 0, .3 * clamp((t - 35.86) / .3)); c.paint()
-    k = pop(t, 35.9, .35)
+    k = max(pop(t, 35.9, .35), .02)
     c.save(); c.translate(W / 2 - 30, 560); c.scale(k, k); c.rotate(-.04)
     rrect(c, -450, -150, 900, 300, 34); fs(c, (1, 1, 1), 10)
     text(c, "ATAU", 0, -40, 30, OUT)
     for i, (lbl, col) in enumerate((("TIM JOGET", '#2EAD6B'), ("TIM NYINYIR?", '#D7141A'))):
-        ki = pop(t, 36.4 + i * .9, .3)
+        ki = max(pop(t, 36.4 + i * .9, .3), .02)
         c.save(); c.translate(-240 + i * 480, -40); c.scale(ki, ki); c.rotate(.05 * math.sin(t * 6 + i * 2))
         rrect(c, -170, -66, 340, 132, 26); fs(c, hx(col), 8)
         text(c, lbl, 0, 0, 44 if i == 0 else 40, (1, 1, 1), OUT, 6)
