@@ -42,7 +42,7 @@ Sensor nama jika diminta: "tiiit" 1000 Hz + balok hitam.
 - Ep 5 (84 dtk): kilas balik 3 tahun lalu, modal dibawa kabur pemasok, utang pelanggan numpuk, Bu Julit mengejek; Pak Rahmat narik ojek,
   jaga toko, jual bensin botolan; istri menangis, toko bangkit; Bu Julit datang mau ngutang, "utang yang dulu aja belum lunas".
   Penutup: "masih dibolehin utang?" (BOLEH UTANG / GAK BOLEH). Properti baru di ep5.py: rak_bensin, buku_utang, kaleng_uang, air_mata, sc_ojek.
-- Ep 6 (40 dtk, audio final pengguna dengan lagu 3,7-28 dtk, 116,75 BPM): Pak Rahmat joget sambil antar sembako pakai Gran Max,
+- Ep 6 (43 dtk, audio revisi: hook Pak Rahmat 3,8 + lagu 130 BPM dipotong 27,25 dtk + ending 11,7; ep6.py punya pemetaan waktu U2T): Pak Rahmat joget sambil antar sembako pakai Gran Max,
   Bu Julit kira stres & norak, ternyata orderan banjir. Penutup: TIM JOGET / TIM NYINYIR (tanpa kartu gelap, tokoh tetap terlihat).
   Baru di ep6.py: kios_bg (deretan kios/pasar), kabin (tampak depan kaca), speaker, not_musik, joget_po/nyetir_po (per ketukan), kotak.
   Jika pengguna memberi audio final berisi lagu: hapus suara() di episode -> audio dipakai apa adanya; CTA = None untuk penutup sendiri.

@@ -8,20 +8,21 @@ from aset_dasar import bulb_glow
 import gaya
 
 N = 6
-VDUR = 39.7
-DUR = 40.0
+VDUR = 42.77
+DUR = 43.07
 HOOK = ("DIKIRA STRES?!", 2.2)
 PUNCH = (0.12, 21.0)
 BERSAMBUNG = None
 CTA = None                                  # penutup sendiri (tokoh tetap terlihat), lihat efek_atas
 SUASANA = [(26.1, 28.7, 'warm'), (33.6, 99, 'warm')]
-JULIT_SPEAK = [(28.76, 32.82)]
+JULIT_SPEAK = [(28.76, 32.82)]        # waktu naskah (dipetakan ke audio asli lewat U2T)
+RAHMAT_SPEAK = [(33.38, 38.9)]
 
-BPM = 116.75; BEAT = 60 / BPM; B0 = 3.721; SONG = (3.72, 28.0)
+BPM = 130.0; BEAT = 60 / BPM; B0 = 4.087; SONG = (3.816, 31.07)      # audio revisi: hook + lagu (dipotong 27,25 dtk) + ending
 
 def beat(t):
-    """(indeks ketukan, fase 0..1). Di luar lagu: ketukan tetap jalan pelan supaya gerak tidak berhenti mendadak."""
-    u = (t - B0) / BEAT
+    """(indeks ketukan, fase 0..1) memakai waktu ASLI audio (t di adegan = waktu naskah, dipetakan U2T)."""
+    u = (U2T(t) - B0) / BEAT
     return int(math.floor(u)), u - math.floor(u)
 
 def hentak(t):
@@ -29,7 +30,7 @@ def hentak(t):
     b, ph = beat(t)
     return math.exp(-ph * 5)
 
-def lagu(t): return SONG[0] <= t < SONG[1]
+def lagu(t): return SONG[0] <= U2T(t) < SONG[1]
 
 
 # ------------------------------------------------------------ pose joget
@@ -352,9 +353,12 @@ def sc_joget(c, t, t0):
 
 MONT = [(24.0, 5, 'serah'), (24.51, 1, 'bayar'), (25.03, 2, 'serah'), (25.54, 0, 'senyum')]
 
+def mont_i(t):
+    return min(3, int((U2T(t) - U2T(24.0)) / BEAT))
+
 def sc_montase(c, t, t0):
-    """potongan cepat tiap ketukan: berhenti, serahkan, bayar, senyum."""
-    i = max(j for j, m in enumerate(MONT) if t >= m[0])
+    """potongan cepat tiap ketukan lagu: berhenti, serahkan, bayar, senyum."""
+    i = mont_i(t)
     ta, kio, kind = MONT[i]
     kios_bg(c, t, kio)
     mobil(c, t, -560, 1640, .25 - .05 * i, driver=False)
@@ -365,13 +369,13 @@ def sc_montase(c, t, t0):
         orang(c, t, 'rahmat', 860, aF=(95, -10), eyes='happy', expr='grin', look=(6, 0))
         orang(c, t, 'b1', 1240, flip=True, aF=(95, -10), eyes='happy', expr='grin', look=(-6, 0),
               hold=lambda c, h: uang(c, h[0], h[1], .9))
-        coin_pop(c, 1050, 1000, t, ta + .1)
+        coin_pop(c, 1050, 1000, t, t0 + .1)
     else:
         orang(c, t, 'rahmat', 1000, **joget_po(t, .45, aF=(100, -15), thumb=True))
-        spark(c, 1150, 1000, 24, pop(t, ta + .05, .2))
+        spark(c, 1150, 1000, 24, .9)
 
 def cam_montase(t):
-    i = max(j for j, m in enumerate(MONT) if t >= m[0])
+    i = mont_i(t)
     return [(1050, 1150, 1.2), (1050, 1120, 1.45), (1050, 1150, 1.2), (1000, 1120, 1.5)][i]
 
 def sc_menang(c, t, t0):
@@ -395,7 +399,7 @@ def show(t, t0, t1, d=.3): return pop(t, t0, d) * (1 - ease((t - t1) / d))
 
 def sc_nyinyir(c, t, t0):
     """'Halah... norak banget!': Bu Julit ketus, menunjuk mobil."""
-    m = talk(t, JULIT_SPEAK)
+    m = talk6(t, JULIT_SPEAK)
     jpo = {'who': 'julit', 'x': 2350, 'y': YS, 'flip': True, 'aF': (100, -15) if t > 29.2 else (38, -100), 'aB': (38, -100),
            'eyes': 'squint', 'brows': 'smug', 'expr': 'pout', 'mouth': m,
            'tilt': 5 * math.sin(t * 6), 'look': (-6, 0)}
@@ -407,7 +411,7 @@ def sc_ending(c, t, t0):
     """pesanan baru berdatangan; Bu Julit bengong & iri; Pak Rahmat goyang bahu kecil."""
     people = [{'who': 'b1', 'x': 640, 'y': YS, 'aF': (40, 10), 'expr': 'grin', 'eyes': 'happy', 'look': (5, 0),
                'hold': lambda c, h: E.kresek(c, h[0], h[1], hx('#E5473B'))},
-              dict(joget_po(t, .35, aF=(100, -15), thumb=t > 37.0), who='rahmat', x=1100, y=YS),
+              dict(joget_po(t, .35, aF=(100, -15), thumb=t > 38.5, mouth=talk6(t, RAHMAT_SPEAK), look=(0, 0)), who='rahmat', x=1100, y=YS),
               {'who': 'julit', 'x': 1480, 'y': YS, 'flip': True, 'aF': (38, -100), 'aB': (38, -100),
                'eyes': 'wide' if t < 36.0 else 'squint', 'expr': 'o' if t < 36.0 else 'pout', 'brows': 'up' if t < 36.0 else 'angry',
                'mouth': .4 if t < 36.0 else 0, 'look': (-6, 0), 'tilt': 4 * math.sin(t * 5)}]
@@ -420,11 +424,11 @@ def efek_ending_hp(c, t):
     msgs = [(33.9, "Toko Makmur", "Pak, besok kirim\n20 dus mie ya", False), (34.4, "Warung Bu Siti", "Beras 10 karung!", False),
             (34.9, "Kios Berkah", "Minyak 5 dus pak", False), (35.3, "Grosir Jaya", "Tambah orderan!", False)]
     if k > .03:
-        c.save(); c.translate(W / 2 - 40, lerp(2400, 820, k)); c.rotate(-.04)
-        E.phone(c, 0, 0, .95, msgs, t, header="ORDERAN SEMBAKO", group=False)
+        c.save(); c.translate(250, lerp(2400, 700, k)); c.rotate(-.05)
+        E.phone(c, 0, 0, .58, msgs, t, header="ORDERAN SEMBAKO", group=False)
         c.restore()
         for j, ta in enumerate((34.0, 34.5, 35.0, 35.4)):
-            card(c, 860, 360 + j * 0, pop(t, ta, .2) * (1 - ease((t - ta - .4) / .2)), "+1 ORDER", hx('#2EAD6B'), 40, fg=(1, 1, 1))
+            card(c, 250, 380 + j * 0, pop(t, ta, .2) * (1 - ease((t - ta - .4) / .2)), "+1 ORDER", hx('#2EAD6B'), 40, fg=(1, 1, 1))
 
 def penutup(c, t):
     """TIM JOGET ATAU TIM NYINYIR? + TULIS DI KOMENTAR! + FOLLOW UNTUK EP 7 (tokoh tetap terlihat)."""
@@ -476,12 +480,12 @@ SCENES = [
 
 
 # ------------------------------------------------------------ efek & label
-def efek_bawah(c, t):
+def _efek_bawah(c, t):
     E.focus_lines(c, t, 0.1, 0.9, cy=H * .45)
     E.focus_lines(c, t, 21.0, 21.9, cy=H * .5)
     E.focus_lines(c, t, 29.4, 30.1, cy=H * .42)
 
-def efek_atas(c, t):
+def _efek_atas(c, t):
     if 3.75 <= t < 4.75: E.pill(c, "PLAY LAGU!", t, 3.8, y=330, col=hx('#7FFFB0'))
     if 9.15 <= t < 10.6: E.pill(c, "ANTAR PERTAMA", t, 9.2, y=330, col=hx('#FFE14D'))
     if 18.05 <= t < 19.6: E.pill(c, "PESANAN RAME!", t, 18.1, y=330, col=hx('#2EAD6B'), fg=(1, 1, 1))
@@ -492,3 +496,36 @@ def efek_atas(c, t):
 
 def vignette(t): return .34
 # tanpa suara(): audio final pengguna dipakai apa adanya
+
+
+# ------------------------------------------------------------ PEMETAAN WAKTU (revisi audio: hook 3,8 + lagu 27,25 + ending 11,7 dtk)
+# Adegan ditulis dalam "waktu naskah" (audio lama). Batas adegan di dalam lagu dikunci ke ketukan lagu baru,
+# ending dikunci ke kata: Halah 32,04 | Tapi 36,36 | kalian 39,04 | coba 41,26.
+import numpy as _np
+_OB = [3.72, 4.75, 7.2, 9.1, 12.1, 15.1, 18.0, 21.0, 24.0, 26.1, 27.4]
+def _snap(x): return B0 + round((x - B0) / BEAT) * BEAT
+_KU = [0.0] + _OB + [28.0, 28.7, 28.76, 32.82, 33.38, 35.86, 38.34, 39.7, 40.0, 60.0]
+_KT = [0.0, SONG[0]] + [_snap(SONG[0] + (u - 3.72) * (SONG[1] - SONG[0]) / (28.0 - 3.72)) for u in _OB[1:]] + \
+      [SONG[1], 31.5, 32.04, 35.9, 36.36, 39.04, 41.26, 42.77, 43.07, 63.07]
+def U2T(u): return float(_np.interp(u, _KU, _KT))
+def T2U(t): return float(_np.interp(t, _KT, _KU))
+
+def talk6(u, spans):
+    return talk(U2T(u), [(U2T(a), U2T(b)) for a, b in spans])
+
+def _wrap(fn):
+    def g(c, t, t0): return fn(c, T2U(t), T2U(t0))
+    g.__name__ = fn.__name__
+    return g
+
+def _cam(keys):
+    if keys == 'split': return keys
+    if callable(keys): return lambda t, k=keys: k(T2U(t))
+    return [(U2T(k[0]),) + tuple(k[1:]) for k in keys]
+
+SCENES = [(U2T(a), U2T(b), _wrap(fn), _cam(keys)) for (a, b, fn, keys) in SCENES]
+PUNCH = (0.12, U2T(21.0))
+SUASANA = [(U2T(a), U2T(b), m) for a, b, m in SUASANA]
+
+def efek_bawah(c, t): _efek_bawah(c, T2U(t))
+def efek_atas(c, t): _efek_atas(c, T2U(t))
