@@ -36,6 +36,7 @@ CHUNKS = []
 
 P.GRADE['tense'] = (.94, .99, 1.08)
 P.GRADE['warm'] = (1.06, 1.0, .91)
+P.GRADE['dulu'] = (1.06, .99, .88)       # kilas balik hangat kecoklatan (ep 5)
 
 
 def durasi_suara(path="audio.wav"):
