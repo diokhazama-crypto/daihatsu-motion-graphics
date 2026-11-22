@@ -14,7 +14,8 @@ Variabel episode (modul EP) yang dibaca:
   PUNCH = (detik, ...)                        maks 2 zoom hentak
   SUASANA = [(t0, t1, 'day'|'morning'|'tense'|'warm'|'freeze'|...)]   selain itu 'day'
   BERSAMBUNG = detik muncul kartu "BERSAMBUNG..." atau None
-  CTA = dict(baris1=..., baris2=..., pilihan=[(teks, '#warna'), (teks, '#warna')])
+  CTA = dict(baris1=..., baris2=..., pilihan=[(teks, '#warna'), (teks, '#warna')])  atau None (penutup sendiri)
+  tanpa fungsi suara(S) di episode: audio final dipakai apa adanya (tanpa musik/sfx tambahan)
   opsional: efek_bawah(c,t) [sebelum grading], efek_atas(c,t) [sesudah grading, sebelum teks],
             akting(who,t,po), vignette(t) -> kekuatan (default .34), sebelum_frame(t)
 """
@@ -143,8 +144,8 @@ def bersambung(c, t):
 
 def cta(c, t):
     VDUR = EP.VDUR
-    if t < VDUR + .2: return
-    cfg = EP.CTA
+    cfg = getattr(EP, 'CTA', None)
+    if not cfg or t < VDUR + .2: return      # CTA = None: episode membuat penutup sendiri di efek_atas
     d = t - (VDUR + .2)
     c.set_source_rgba(.04, .01, .03, min(.92, d * 4)); c.paint()
     k = max(pop(t, VDUR + .25, .35), .02)

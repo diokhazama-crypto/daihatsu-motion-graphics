@@ -107,6 +107,9 @@ def _seg(n, i, k):
 
 def suara(n):
     gaya, ep = muat_episode(n)
+    if not hasattr(ep, 'suara'):          # audio final dari pengguna: pakai apa adanya
+        ff("-i", "audio_mentah.wav", "-af", f"apad=whole_dur={ep.DUR}", "-ar", "44100", "mix_pro.wav")
+        return
     import sfx_alat as S
     S.mulai(ep.DUR)
     ep.suara(S)
