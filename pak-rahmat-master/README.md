@@ -17,7 +17,7 @@ python3 jalankan.py 5 render --seg 2                     # revisi: render ulang 
 python3 jalankan.py 5 arsip                              # narasi MP3 + words.json + ep5.py ber-awalan arsip
 ```
 
-Render ep 4 (68 dtk) di 4 inti: sekitar 5-6 menit.
+Render ep 4 (68 dtk) di 4 inti: sekitar 14 menit.
 
 ## Isi folder
 
