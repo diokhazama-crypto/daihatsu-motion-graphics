@@ -106,14 +106,16 @@ def speaker(c, x, y, s, t):
         ell(c, 0, 0, rr, rr); c.set_source_rgba(1, .9, .3, .35 * (1 - ((t * 2 + k / 3) % 1)) * (p + .3)); c.set_line_width(6); c.stroke()
     c.restore()
 
-MUAT = [('k', 30, -250), ('k', 155, -250), ('k', 280, -250), ('k', 405, -250), ('s', 90, -320), ('s', 205, -320), ('s', 320, -320),
-        ('k', 60, -390), ('k', 185, -390), ('s', 380, -390), ('k', 470, -330), ('s', 250, -440)]
+MUAT = [('k', 30, -250), ('k', 155, -250), ('k', 280, -250), ('k', 405, -250),      # lapis 1 di lantai bak (y = alas barang)
+        ('s', 50, -328), ('s', 175, -328), ('s', 300, -328), ('k', 405, -328),       # lapis 2 di atas kardus (tinggi kardus 78)
+        ('k', 110, -400), ('k', 235, -400), ('s', 360, -406)]                       # lapis 3 di atas karung (tinggi karung 72)
 
 def muatan(c, x, y, level):
+    """muatan bak bertumpuk rapi; level 0..1 (yang paling atas habis duluan)."""
     n = int(round(level * len(MUAT)))
     for kind, dx, dy in MUAT[:n]:
         if kind == 'k': E.kardus(c, x + dx, y + dy, 118, 78)
-        else: lib.sack(c, x + dx + 55, y + dy + 30, 112, 72)
+        else: lib.sack(c, x + dx + 56, y + dy - 36, 112, 72)
 
 WIN = (557, -391, 782, -291)      # jendela kabin (koordinat lokal gran_max)
 
