@@ -3,6 +3,9 @@
 Jika pengguna mengirim audio narasi dan/atau minta "buat ep N" (atau hanya mengirim audio), langsung ikuti aturan ini.
 Ini menggantikan membaca PANDUAN_VIDEO_V4 dan MASTER_PAK_RAHMAT di Drive: JANGAN buka Drive untuk episode biasa.
 
+## Bahasa
+- Selalu pakai bahasa Indonesia di semua pesan ke pengguna (termasuk pesan singkat saat bekerja). Jangan bahasa Inggris.
+
 ## Dilarang
 - Unggah / backup apa pun ke Google Drive (video, MP3, words.json, CATATAN, kode). Hasil cukup dikirim ke pengguna (SendUserFile).
 - Membuka arsip episode lama, cerita lain, skill/tool video lain, web search. Pakai kode master saja.
