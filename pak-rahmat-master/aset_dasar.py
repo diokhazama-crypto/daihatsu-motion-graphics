@@ -116,7 +116,7 @@ CH = {
  'b4': dict(skin=SKIN_B, dress=hx('#E5473B'), dots=hx('#FFD1C8'), hair='hijab', hij=hx('#7A4FD1'), kind='daster'),
 }
 # Pak Bos (ep 7+): tokoh orisinal, baju safari krem, badan agak gendut, rambut hitam disisir rapi
-CH['pakbos'] = dict(skin=hx('#D7A07A'), shirt=hx('#D8C9A2'), pants=hx('#B9A87F'), hair='slick', kind='man', safari=True,
+CH['pakbos'] = dict(skin=hx('#D7A07A'), shirt=hx('#D8C9A2'), pants=hx('#B9A87F'), hair='slick', kind='man', safari=True, gendut=True, bahu=56, arm_w=40, leg_w=46,
                     collar=True, collar_col=hx('#CDBD93'), long=True, foot='shoe', shoe_col=hx('#3B2A1E'), cuff=hx('#CDBD93'))
 
 def arm(c, sx, sy, a1, a2, sleeve, skin, L=70, w=24, long=False, watch=None, gelang=False, cuff=None, hd=False):
@@ -143,7 +143,7 @@ def arm(c, sx, sy, a1, a2, sleeve, skin, L=70, w=24, long=False, watch=None, gel
         for k in (-4, 4):
             rrect(c, k - 2.5, -15, 5, 30, 2.5); fs(c, hx('#F2C230'), 2)
         c.restore()
-    ell(c, hx_, hy_, 17, 17); fs(c, skin, 5)
+    ell(c, hx_, hy_, 17 * max(1, w / 24) ** .7, 17 * max(1, w / 24) ** .7); fs(c, skin, 5)
     if hd:
         ang2 = math.atan2(hy_ - ey, hx_ - ex)
         c.save(); c.translate(hx_, hy_); c.rotate(ang2 - math.pi / 2)
@@ -222,7 +222,13 @@ def face(c, P, hy, po, t):
         ell(c, -54, hy + 6, 15, 18); fs(c, skin, 5)
         if hair == 'rollers':
             ell(c, -62, hy - 28, 30, 30); fs(c, hx('#3A2418'), 6)
+        if P.get('gendut'):                                  # pipi tembam + dagu berlipat
+            ell(c, 0, hy + 30, 76, 54); fs(c, skin, 6)
         ell(c, 0, hy, 66, 66); fs(c, skin, 6)
+        if P.get('gendut'):
+            c.save(); ell(c, 0, hy + 30, 76, 54); c.clip(); ell(c, 0, hy, 60, 60); fill(c, skin); c.restore()
+            c.move_to(-34, hy + 72); c.curve_to(-14, hy + 86, 14, hy + 86, 34, hy + 72)
+            c.set_source_rgba(0, 0, 0, .28); c.set_line_width(3.5); c.stroke()
     # hair on top
     if hair == 'peci':
         pl = po.get('peci_lift', 0) * (18 + 4 * math.sin(t * 30))
@@ -459,31 +465,32 @@ def safari_badan(c, P, sh, hip, sit):
     """baju safari badan gendut (Pak Bos): perut membulat, 4 saku bertutup, epolet, kancing, pin emas."""
     col = P['shirt']; dk = tuple(v * .82 for v in col)
     bot = hip + (4 if sit else 22)
-    c.new_path(); c.move_to(-60, sh + 14); c.curve_to(-60, sh - 10, -40, sh - 10, -24, sh - 10); c.line_to(24, sh - 10)
-    c.curve_to(40, sh - 10, 60, sh - 10, 60, sh + 14)
-    c.curve_to(64, sh + 60, 92, hip - 70, 86, hip - 20); c.curve_to(84, bot - 6, 74, bot, 62, bot)
-    c.curve_to(20, bot + 6, -20, bot + 6, -62, bot); c.curve_to(-74, bot, -84, bot - 6, -86, hip - 20)
-    c.curve_to(-92, hip - 70, -64, sh + 60, -60, sh + 14); c.close_path(); fs(c, col, 6)
-    c.move_to(-76, hip - 60); c.curve_to(-70, hip - 20, -60, bot - 6, -40, bot - 2); c.set_source_rgba(0, 0, 0, .12); c.set_line_width(8); c.stroke()
-    c.move_to(60, sh + 30); c.curve_to(78, hip - 80, 80, hip - 40, 70, hip - 10); c.set_source_rgba(1, 1, 1, .18); c.set_line_width(6); c.stroke()
+    c.new_path(); c.move_to(-76, sh + 18); c.curve_to(-74, sh - 12, -46, sh - 14, -24, sh - 14); c.line_to(24, sh - 14)
+    c.curve_to(46, sh - 14, 74, sh - 12, 76, sh + 18)
+    c.curve_to(96, sh + 60, 124, hip - 80, 116, hip - 20); c.curve_to(112, bot - 2, 92, bot + 8, 66, bot + 8)
+    c.curve_to(24, bot + 14, -24, bot + 14, -66, bot + 8); c.curve_to(-92, bot + 8, -112, bot - 2, -116, hip - 20)
+    c.curve_to(-124, hip - 80, -96, sh + 60, -76, sh + 18); c.close_path(); fs(c, col, 6)
+    c.move_to(-104, hip - 70); c.curve_to(-98, hip - 20, -84, bot - 2, -50, bot + 4); c.set_source_rgba(0, 0, 0, .13); c.set_line_width(10); c.stroke()
+    c.move_to(80, sh + 40); c.curve_to(104, hip - 90, 108, hip - 40, 96, hip - 10); c.set_source_rgba(1, 1, 1, .18); c.set_line_width(7); c.stroke()
+    c.move_to(-70, hip - 8); c.curve_to(-30, hip + 6, 30, hip + 6, 70, hip - 8); c.set_source_rgba(0, 0, 0, .12); c.set_line_width(4); c.stroke()   # lipatan perut
     c.move_to(0, sh - 6); c.line_to(0, bot + 2); c.set_source_rgba(0, 0, 0, .3); c.set_line_width(3); c.stroke()      # belahan kancing
     for k in range(5):
         yy = sh + 22 + k * ((bot - sh - 40) / 4)
         ell(c, 6, yy, 4.5, 4.5); fs(c, hx('#8A7A55'), 2)
     for sgn in (-1, 1):                                                         # saku dada bertutup
-        x0 = sgn * 32 - 19
+        x0 = sgn * 38 - 19
         rrect(c, x0, sh + 34, 38, 40, 4); fs(c, col, 3)
-        c.move_to(sgn * 32, sh + 38); c.line_to(sgn * 32, sh + 72); c.set_source_rgba(0, 0, 0, .2); c.set_line_width(2); c.stroke()
-        poly(c, [(x0 - 1, sh + 30), (x0 + 39, sh + 30), (x0 + 39, sh + 42), (sgn * 32, sh + 48), (x0 - 1, sh + 42)]); fs(c, dk, 3)
-        ell(c, sgn * 32, sh + 42, 3.5, 3.5); fs(c, hx('#8A7A55'), 1.5)
-        x1 = sgn * 44 - 24                                                       # saku bawah besar
+        c.move_to(sgn * 38, sh + 38); c.line_to(sgn * 38, sh + 72); c.set_source_rgba(0, 0, 0, .2); c.set_line_width(2); c.stroke()
+        poly(c, [(x0 - 1, sh + 30), (x0 + 39, sh + 30), (x0 + 39, sh + 42), (sgn * 38, sh + 48), (x0 - 1, sh + 42)]); fs(c, dk, 3)
+        ell(c, sgn * 38, sh + 42, 3.5, 3.5); fs(c, hx('#8A7A55'), 1.5)
+        x1 = sgn * 58 - 24                                                       # saku bawah besar
         rrect(c, x1, hip - 52, 48, 50, 5); fs(c, col, 3)
-        poly(c, [(x1 - 1, hip - 58), (x1 + 49, hip - 58), (x1 + 49, hip - 44), (sgn * 44, hip - 38), (x1 - 1, hip - 44)]); fs(c, dk, 3)
-        ell(c, sgn * 44, hip - 44, 3.5, 3.5); fs(c, hx('#8A7A55'), 1.5)
-        c.save(); c.translate(sgn * 44, sh - 4); c.rotate(sgn * .18)                # epolet
+        poly(c, [(x1 - 1, hip - 58), (x1 + 49, hip - 58), (x1 + 49, hip - 44), (sgn * 58, hip - 38), (x1 - 1, hip - 44)]); fs(c, dk, 3)
+        ell(c, sgn * 58, hip - 44, 3.5, 3.5); fs(c, hx('#8A7A55'), 1.5)
+        c.save(); c.translate(sgn * 58, sh - 8); c.rotate(sgn * .2)                # epolet
         rrect(c, -20, -7, 40, 14, 5); fs(c, dk, 3); ell(c, -sgn * 12, 0, 3.5, 3.5); fs(c, hx('#8A7A55'), 1.5)
         c.restore()
-    ell(c, 34, sh + 20, 7, 7); fs(c, hx('#E8B53A'), 2.5); ell(c, 34, sh + 20, 3, 3); fill(c, hx('#9C6B12'))   # pin emas
+    ell(c, 40, sh + 20, 7, 7); fs(c, hx('#E8B53A'), 2.5); ell(c, 40, sh + 20, 3, 3); fill(c, hx('#9C6B12'))   # pin emas
 
 def person(c, x, y, who, po=None, s=1.0, t=0.0, flip=False):
     P = CH[who]; po = dict(po or {})
@@ -509,7 +516,7 @@ def person(c, x, y, who, po=None, s=1.0, t=0.0, flip=False):
     sleeve = P.get('shirt', P.get('dress'))
     # back arm
     sleeve = P.get('jacket', sleeve)
-    arm(c, -40, sh + 12, aB[0], aB[1], sleeve, skin, long=P.get('long', False), gelang=P.get('gelang', False), cuff=P.get('cuff'), hd=P.get('hd', False))
+    arm(c, -P.get('bahu', 40), sh + 12, aB[0], aB[1], sleeve, skin, w=P.get('arm_w', 24), long=P.get('long', False), gelang=P.get('gelang', False), cuff=P.get('cuff'), hd=P.get('hd', False))
     # legs
     if sit:
         legc = P.get('pants', skin)
@@ -520,9 +527,10 @@ def person(c, x, y, who, po=None, s=1.0, t=0.0, flip=False):
         legc = skin if ex else P['pants']
         top = -48 if ex else hip
         st = po.get('step', 0)
-        for dx, ph in ((-22, 0), (22, math.pi)):
+        lw_ = P.get('leg_w', 32); lx_ = 22 + (lw_ - 32) * .5
+        for dx, ph in ((-lx_, 0), (lx_, math.pi)):
             fxo = st * 18 * math.sin(t * 9 + ph)
-            line(c, [(dx, top), (dx + fxo, -12)], 26 if ex else 32, legc)
+            line(c, [(dx, top), (dx + fxo, -12)], 26 if ex else lw_, legc)
             if P.get('chino') and not ex:
                 c.move_to(dx + 4, top + 8); c.line_to(dx + fxo + 4, -26); c.set_source_rgba(1, 1, 1, .35); c.set_line_width(2); c.stroke()
                 if P.get('hd'):
@@ -691,7 +699,7 @@ def person(c, x, y, who, po=None, s=1.0, t=0.0, flip=False):
     c.save(); c.translate(0, hy + 60); c.rotate(math.radians(po.get('tilt', 0))); c.translate(0, -(hy + 60))
     face(c, P, hy, po, t)
     c.restore()
-    hand = arm(c, 40, sh + 12, aF[0], aF[1], sleeve, skin, long=P.get('long', False), watch=P.get('watch'), cuff=P.get('cuff'), hd=P.get('hd', False))
+    hand = arm(c, P.get('bahu', 40), sh + 12, aF[0], aF[1], sleeve, skin, w=P.get('arm_w', 24), long=P.get('long', False), watch=P.get('watch'), cuff=P.get('cuff'), hd=P.get('hd', False))
     if po.get('thumb'):
         ell(c, hand[0] + 2, hand[1] - 20, 7, 13); fs(c, skin, 3)
     if po.get('hold'):
