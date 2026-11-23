@@ -31,7 +31,8 @@ Sensor nama jika diminta: "tiiit" 1000 Hz + balok hitam.
 - Latar: toko sembako Pak Rahmat, kampung, rumah Bu Julit, dealer Daihatsu (tulisan DAIHATSU merah, tanpa logo). Gran Max pick up putih
   (stiker kuning-merah). Bentuk toko, mobil, tokoh HARUS sama: pakai aset_*.py, jangan gambar ulang.
 - Tokoh: Pak Rahmat (peci hitam, kumis, kaos hijau), Bu Rahmat (CH burahmat), anak, Bu Julit (daster ungu, rol rambut pink),
-  teman julit (friend), Dio - Sales Daihatsu (CH['dio'], jangan diubah), pembeli b1-b4, Kepala Dapur MBG, koki, murid, guru.
+  teman julit (friend), Dio - Sales Daihatsu (CH['dio'], jangan diubah), Pak Bos (CH['pakbos']: tokoh orisinal, safari krem,
+  badan gendut, safari=True; jangan dibuat mirip orang sungguhan), pembeli b1-b4, Kepala Dapur MBG, koki, murid, guru.
 - Awalan nama file: `PakRahmat_GranMax_ep<N>_`.
 
 ## Ringkasan episode

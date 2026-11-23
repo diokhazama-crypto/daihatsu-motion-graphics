@@ -115,6 +115,9 @@ CH = {
  'b3': dict(skin=SKIN_A, shirt=hx('#F07D2B'), pants=hx('#3D3D3D'), hair='cap', kind='man'),
  'b4': dict(skin=SKIN_B, dress=hx('#E5473B'), dots=hx('#FFD1C8'), hair='hijab', hij=hx('#7A4FD1'), kind='daster'),
 }
+# Pak Bos (ep 7+): tokoh orisinal, baju safari krem, badan agak gendut, rambut hitam disisir rapi
+CH['pakbos'] = dict(skin=hx('#D7A07A'), shirt=hx('#D8C9A2'), pants=hx('#B9A87F'), hair='slick', kind='man', safari=True,
+                    collar=True, collar_col=hx('#CDBD93'), long=True, foot='shoe', shoe_col=hx('#3B2A1E'), cuff=hx('#CDBD93'))
 
 def arm(c, sx, sy, a1, a2, sleeve, skin, L=70, w=24, long=False, watch=None, gelang=False, cuff=None, hd=False):
     r1 = math.radians(a1); r2 = math.radians(a1 + a2)
@@ -452,6 +455,36 @@ def face(c, P, hy, po, t):
             c.move_to(mx, my - 8); c.curve_to(mx + sgn * 10, my - 14, mx + sgn * 22, my - 10, mx + sgn * 26, my - 2)
             c.curve_to(mx + sgn * 16, my - 4, mx + sgn * 8, my - 2, mx, my - 2); c.close_path(); fill(c, hx('#1B1414'))
 
+def safari_badan(c, P, sh, hip, sit):
+    """baju safari badan gendut (Pak Bos): perut membulat, 4 saku bertutup, epolet, kancing, pin emas."""
+    col = P['shirt']; dk = tuple(v * .82 for v in col)
+    bot = hip + (4 if sit else 22)
+    c.new_path(); c.move_to(-60, sh + 14); c.curve_to(-60, sh - 10, -40, sh - 10, -24, sh - 10); c.line_to(24, sh - 10)
+    c.curve_to(40, sh - 10, 60, sh - 10, 60, sh + 14)
+    c.curve_to(64, sh + 60, 92, hip - 70, 86, hip - 20); c.curve_to(84, bot - 6, 74, bot, 62, bot)
+    c.curve_to(20, bot + 6, -20, bot + 6, -62, bot); c.curve_to(-74, bot, -84, bot - 6, -86, hip - 20)
+    c.curve_to(-92, hip - 70, -64, sh + 60, -60, sh + 14); c.close_path(); fs(c, col, 6)
+    c.move_to(-76, hip - 60); c.curve_to(-70, hip - 20, -60, bot - 6, -40, bot - 2); c.set_source_rgba(0, 0, 0, .12); c.set_line_width(8); c.stroke()
+    c.move_to(60, sh + 30); c.curve_to(78, hip - 80, 80, hip - 40, 70, hip - 10); c.set_source_rgba(1, 1, 1, .18); c.set_line_width(6); c.stroke()
+    c.move_to(0, sh - 6); c.line_to(0, bot + 2); c.set_source_rgba(0, 0, 0, .3); c.set_line_width(3); c.stroke()      # belahan kancing
+    for k in range(5):
+        yy = sh + 22 + k * ((bot - sh - 40) / 4)
+        ell(c, 6, yy, 4.5, 4.5); fs(c, hx('#8A7A55'), 2)
+    for sgn in (-1, 1):                                                         # saku dada bertutup
+        x0 = sgn * 32 - 19
+        rrect(c, x0, sh + 34, 38, 40, 4); fs(c, col, 3)
+        c.move_to(sgn * 32, sh + 38); c.line_to(sgn * 32, sh + 72); c.set_source_rgba(0, 0, 0, .2); c.set_line_width(2); c.stroke()
+        poly(c, [(x0 - 1, sh + 30), (x0 + 39, sh + 30), (x0 + 39, sh + 42), (sgn * 32, sh + 48), (x0 - 1, sh + 42)]); fs(c, dk, 3)
+        ell(c, sgn * 32, sh + 42, 3.5, 3.5); fs(c, hx('#8A7A55'), 1.5)
+        x1 = sgn * 44 - 24                                                       # saku bawah besar
+        rrect(c, x1, hip - 52, 48, 50, 5); fs(c, col, 3)
+        poly(c, [(x1 - 1, hip - 58), (x1 + 49, hip - 58), (x1 + 49, hip - 44), (sgn * 44, hip - 38), (x1 - 1, hip - 44)]); fs(c, dk, 3)
+        ell(c, sgn * 44, hip - 44, 3.5, 3.5); fs(c, hx('#8A7A55'), 1.5)
+        c.save(); c.translate(sgn * 44, sh - 4); c.rotate(sgn * .18)                # epolet
+        rrect(c, -20, -7, 40, 14, 5); fs(c, dk, 3); ell(c, -sgn * 12, 0, 3.5, 3.5); fs(c, hx('#8A7A55'), 1.5)
+        c.restore()
+    ell(c, 34, sh + 20, 7, 7); fs(c, hx('#E8B53A'), 2.5); ell(c, 34, sh + 20, 3, 3); fill(c, hx('#9C6B12'))   # pin emas
+
 def person(c, x, y, who, po=None, s=1.0, t=0.0, flip=False):
     P = CH[who]; po = dict(po or {})
     seed = (sum(map(ord, who)) * 0.137) % 1
@@ -543,7 +576,9 @@ def person(c, x, y, who, po=None, s=1.0, t=0.0, flip=False):
             for sgn in (-1, 1):
                 c.rectangle(sgn * 26 - 3, hip - 18, 6, 12); fill(c, (0, 0, 0), .18)      # belt loops
             tl = hip - sh - 10
-        if P.get('hd') and not P.get('short_shirt') and not sit:
+        if P.get('safari'):
+            safari_badan(c, P, sh, hip, sit)
+        elif P.get('hd') and not P.get('short_shirt') and not sit:
             bt = sh - 8 + tl
             c.new_path(); c.move_to(-56, sh + 22); c.curve_to(-56, sh - 8, -40, sh - 8, -26, sh - 8); c.line_to(26, sh - 8)
             c.curve_to(40, sh - 8, 56, sh - 8, 56, sh + 22); c.line_to(56, bt - 22)
