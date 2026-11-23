@@ -31,6 +31,7 @@ Render ep 4 (68 dtk) di 4 inti: sekitar 14 menit.
 | `aset_pro.py` | (dulu ep2pro.py) `post` (bloom, grading, grain, vignette), `sun_rays`, `dust`, `puff`, `birds` |
 | `aset_mbg.py` | (dulu ep3.py) `dapur_mbg`, `kelas`, `kantor`, `draw_car3` (Gran Max PEMASOK DAPUR MBG), `car_load`, `nota`, `dandang`, `ompreng`, `gembok`, `checklist`, `kontrak`, `alarm`, `uang_terbang`; CH kadapur, koki1-2, murid0-5, guru; `person3` (peci terangkat, rol rambut bergetar) |
 | `aset_dio.py` | (dulu bagian umum ep4.py) CH['dio'] final, `set_pucat`, `talk`, `pose_seq`/`backk`, `brosur`, `name_card`, `bubble`, `gloom`, `tanya`, `card`, `ribbon`, `coin_pop`, `smoke`, `confetti`, `lightning`, `rain`, `watchers`, `street` (dua tokoh di depan toko, mendukung blur latar), `POS_R=1020`, `POS_D=1360`, `YS=1430`, `rahmat_po`, `dio_po`, `SERIUS` |
+| `referensi/` | lembar karakter Pak Bos (`PakBos_lembar_karakter.png`) + skrip pembuatnya (`lembar_pakbos.py`). Pak Bos = `CH['pakbos']` di `aset_dasar.py` (safari krem, badan gendut, kepala besar) |
 | `episode/ep4.py` | contoh episode lengkap (adegan, sisipan close-up, akting, efek, suara) |
 | `episode/TEMPLATE.py` | kerangka episode baru |
 | `kerja/ep<N>/` | file kerja (audio, words.json, hasil render) - tidak disimpan |
