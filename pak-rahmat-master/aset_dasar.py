@@ -116,7 +116,7 @@ CH = {
  'b4': dict(skin=SKIN_B, dress=hx('#E5473B'), dots=hx('#FFD1C8'), hair='hijab', hij=hx('#7A4FD1'), kind='daster'),
 }
 # Pak Bos (ep 7+): tokoh orisinal, baju safari krem, badan agak gendut, rambut hitam disisir rapi
-CH['pakbos'] = dict(skin=hx('#D7A07A'), shirt=hx('#D8C9A2'), pants=hx('#B9A87F'), hair='slick', kind='man', safari=True, gendut=True, bahu=56, arm_w=40, leg_w=46,
+CH['pakbos'] = dict(skin=hx('#D7A07A'), shirt=hx('#D8C9A2'), pants=hx('#B9A87F'), hair='slick', kind='man', safari=True, gendut=True, kepala=(1.24, 1.14), bahu=56, arm_w=40, leg_w=46,
                     collar=True, collar_col=hx('#CDBD93'), long=True, foot='shoe', shoe_col=hx('#3B2A1E'), cuff=hx('#CDBD93'))
 
 def arm(c, sx, sy, a1, a2, sleeve, skin, L=70, w=24, long=False, watch=None, gelang=False, cuff=None, hd=False):
@@ -222,13 +222,7 @@ def face(c, P, hy, po, t):
         ell(c, -54, hy + 6, 15, 18); fs(c, skin, 5)
         if hair == 'rollers':
             ell(c, -62, hy - 28, 30, 30); fs(c, hx('#3A2418'), 6)
-        if P.get('gendut'):                                  # pipi tembam + dagu berlipat
-            ell(c, 0, hy + 30, 76, 54); fs(c, skin, 6)
         ell(c, 0, hy, 66, 66); fs(c, skin, 6)
-        if P.get('gendut'):
-            c.save(); ell(c, 0, hy + 30, 76, 54); c.clip(); ell(c, 0, hy, 60, 60); fill(c, skin); c.restore()
-            c.move_to(-34, hy + 72); c.curve_to(-14, hy + 86, 14, hy + 86, 34, hy + 72)
-            c.set_source_rgba(0, 0, 0, .28); c.set_line_width(3.5); c.stroke()
     # hair on top
     if hair == 'peci':
         pl = po.get('peci_lift', 0) * (18 + 4 * math.sin(t * 30))
@@ -697,6 +691,8 @@ def person(c, x, y, who, po=None, s=1.0, t=0.0, flip=False):
         c.rectangle(-18, hy + 58, 36, 12); fill(c, (0, 0, 0), .12)
     # head (with tilt)
     c.save(); c.translate(0, hy + 60); c.rotate(math.radians(po.get('tilt', 0))); c.translate(0, -(hy + 60))
+    if P.get('kepala'):                                  # kepala lebih besar & lebar (tokoh gendut)
+        kx, ky = P['kepala']; c.translate(0, hy + 50); c.scale(kx, ky); c.translate(0, -(hy + 50))
     face(c, P, hy, po, t)
     c.restore()
     hand = arm(c, P.get('bahu', 40), sh + 12, aF[0], aF[1], sleeve, skin, w=P.get('arm_w', 24), long=P.get('long', False), watch=P.get('watch'), cuff=P.get('cuff'), hd=P.get('hd', False))
