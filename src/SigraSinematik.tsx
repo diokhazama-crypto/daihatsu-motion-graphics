@@ -1,0 +1,293 @@
+import "@fontsource/montserrat/300.css";
+import "@fontsource/montserrat/500.css";
+import "@fontsource/montserrat/600.css";
+import React, { useEffect, useState } from "react";
+import {
+  AbsoluteFill,
+  Audio,
+  Easing,
+  OffthreadVideo,
+  Sequence,
+  continueRender,
+  delayRender,
+  interpolate,
+  random,
+  staticFile,
+  useCurrentFrame,
+} from "remotion";
+import data from "./sigra.json";
+
+// Gaya sinematik malam: grading gelap (sudah dibakar di public/clips/sigra.mp4, lihat
+// scripts/prep_sigra.py), gerak kamera pelan, efek cahaya & transisi dikunci ke ketukan.
+const W = 1080;
+const H = 1920;
+const SANS = "Montserrat, Arial, sans-serif";
+
+type Pt = number[];
+type Bloom = { at: number; x: number; y: number; color: string };
+type Shot = {
+  f: number;
+  d: number;
+  t: number;
+  rate: number;
+  inn: string;
+  out: string;
+  ov: number;
+  zoom: number[];
+  pan: number;
+  light?: Pt;
+  mask?: Pt;
+  glow?: string;
+  flash?: boolean;
+  lamps?: Pt[];
+  bloom?: Bloom[];
+};
+const shots = data.shots as Shot[];
+const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+const ease = Easing.inOut(Easing.cubic);
+const outCubic = Easing.out(Easing.cubic);
+const inCubic = Easing.in(Easing.cubic);
+
+const useFonts = () => {
+  const [h] = useState(() => delayRender("fonts"));
+  useEffect(() => {
+    Promise.all([
+      document.fonts.load("300 60px Montserrat"),
+      document.fonts.load("500 60px Montserrat"),
+      document.fonts.load("600 60px Montserrat"),
+    ]).then(() => continueRender(h));
+  }, [h]);
+};
+
+// ------------------------------------------------------------------ cahaya
+const COLORS: Record<string, string> = {
+  white: "255,250,240",
+  red: "255,40,30",
+  fire: "255,150,60",
+};
+
+// pendaran cahaya (screen blend) di titik (x, y)
+const Glow: React.FC<{ x: number; y: number; r: number; o: number; color?: string }> = ({ x, y, r, o, color = "white" }) =>
+  o <= 0.001 ? null : (
+    <AbsoluteFill
+      style={{
+        mixBlendMode: "screen",
+        opacity: o,
+        background: `radial-gradient(circle ${r}px at ${x * 100}% ${y * 100}%, rgba(${COLORS[color]},0.95), rgba(${COLORS[color]},0.35) 35%, rgba(${COLORS[color]},0) 100%)`,
+      }}
+    />
+  );
+
+// ------------------------------------------------------------------ video
+const Clip: React.FC<{ trim: number; rate: number; style?: React.CSSProperties }> = ({ trim, rate, style }) => (
+  <OffthreadVideo
+    src={staticFile(`clips/${data.clip}.mp4`)}
+    trimBefore={trim}
+    playbackRate={rate}
+    muted
+    style={{ width: "100%", height: "100%", objectFit: "cover", ...style }}
+  />
+);
+
+const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
+  const local = useCurrentFrame();
+  const f = local - s.ov; // 0 = titik potong (ketukan)
+  const left = s.d - f; // sisa frame sampai potongan berikutnya
+  const trim = Math.max(0, Math.round(s.t * data.fps - s.ov * s.rate));
+
+  // --- gerak kamera pelan
+  const life = interpolate(f, [0, s.d], [0, 1], clamp);
+  let scale = interpolate(life, [0, 1], [s.zoom[0], s.zoom[1]], { easing: Easing.inOut(Easing.sin) });
+  let tx = s.pan * (life - 0.5) * 2;
+  let ty = 0;
+
+  // --- kecerahan / efek masuk
+  let bright = 1;
+  let blur = 0;
+  let whip = 0; // px blur horizontal
+  let glowO = 0;
+  if (s.inn === "fromBlack") {
+    bright = interpolate(f, [0, 10], [0, 1], { ...clamp, easing: outCubic });
+    glowO = interpolate(f, [4, 14, s.d], [0, 0.55, 0.35], clamp);
+  }
+  if (s.inn === "lightOn") {
+    // gelap -> kedip -> menyala, pendaran lampu memuncak lalu menetap
+    bright = interpolate(f, [0, 3, 4, 5, 9], [0.35, 0.45, 0.85, 0.5, 1], clamp);
+    glowO = s.light ? interpolate(f, [3, 4, 5, 9, 18], [0, 0.8, 0.3, 1, 0.45], clamp) : 0;
+  }
+  if (s.glow && s.inn !== "fromBlack") glowO = 0.4;
+  if (s.inn === "focus") blur = interpolate(f, [0, 16], [22, 0], { ...clamp, easing: ease });
+  if (s.inn === "whip") {
+    const p = interpolate(f, [0, 5], [1, 0], { ...clamp, easing: outCubic });
+    tx += p * 45;
+    whip = Math.max(whip, p * 70);
+  }
+
+  // --- efek keluar
+  if (s.out === "dim") bright *= interpolate(left, [0, 14], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
+  if (s.out === "whip") {
+    const p = interpolate(left, [5, 0], [0, 1], { ...clamp, easing: inCubic });
+    tx -= p * 45;
+    whip = Math.max(whip, p * 70);
+  }
+  const stretchP = s.out === "stretch" ? interpolate(left, [7, 0], [0, 1], clamp) : 0;
+
+  // --- drop: flash + lampu hero menyala
+  let flashO = 0;
+  if (s.flash) {
+    flashO = interpolate(f, [0, 1, 8], [0.85, 0.6, 0], { ...clamp, easing: outCubic });
+    bright *= interpolate(f, [0, 10], [1.5, 1], clamp);
+  }
+  // bloom terjadwal (semburan cahaya di ketukan)
+  const blooms = (s.bloom ?? []).map((b) => ({
+    ...b,
+    o: interpolate(f, [b.at - 1, b.at + 1, b.at + 14], [0, 1, 0], { ...clamp, easing: outCubic }),
+  }));
+  blooms.forEach((b) => (bright *= 1 + 0.45 * b.o));
+
+  // --- transisi mask: shot ini muncul kecil di dalam lampu shot sebelumnya, lalu membesar
+  let maskStyle: React.CSSProperties = {};
+  if (s.inn === "mask" && s.mask && f < 0) {
+    const p = interpolate(f, [-s.ov, 0], [0, 1], { ...clamp, easing: inCubic });
+    const k = interpolate(p, [0, 1], [0.08, 1]);
+    const cx = interpolate(p, [0, 1], [s.mask[0], 0.5]);
+    const cy = interpolate(p, [0, 1], [s.mask[1], 0.5]);
+    maskStyle = {
+      transform: `translate(${(cx - 0.5) * W}px, ${(cy - 0.5) * H}px) scale(${k})`,
+      borderRadius: 60 / k,
+      overflow: "hidden",
+      boxShadow: `0 0 ${80 / k}px rgba(255,255,255,${0.5 * (1 - p)})`,
+    };
+  }
+
+  const filterId = `whip${i}`;
+  const filters = [
+    whip > 0.5 ? `url(#${filterId})` : "",
+    blur > 0.1 ? `blur(${blur}px)` : "",
+    `brightness(${bright})`,
+  ].join(" ");
+
+  // pixel-stretch: satu baris piksel ditarik ke bawah, garisnya naik dari bawah frame
+  const sy = interpolate(stretchP, [0, 1], [H * 0.98, H * 0.52], { easing: outCubic });
+
+  return (
+    <AbsoluteFill style={{ overflow: "hidden" }}>
+      <svg width={0} height={0} style={{ position: "absolute" }}>
+        <filter id={filterId} x="-20%" y="0" width="140%" height="100%">
+          <feGaussianBlur stdDeviation={`${whip} 0`} edgeMode="duplicate" />
+        </filter>
+      </svg>
+      <AbsoluteFill style={maskStyle}>
+        <AbsoluteFill style={{ filter: filters }}>
+          <AbsoluteFill style={{ transform: `translate(${tx}%, ${ty}%) scale(${scale})` }}>
+            <Clip trim={trim} rate={s.rate} />
+            {stretchP > 0 && (
+              <AbsoluteFill
+                style={{
+                  clipPath: `inset(${sy}px 0 ${H - sy - 2}px 0)`,
+                  transformOrigin: `50% ${sy}px`,
+                  transform: `scaleY(${(H - sy) / 2 + 1})`,
+                }}
+              >
+                <Clip trim={trim} rate={s.rate} />
+              </AbsoluteFill>
+            )}
+          </AbsoluteFill>
+          {s.light && <Glow x={s.light[0]} y={s.light[1]} r={s.glow === "red" ? 520 : 380} o={glowO} color={s.glow ?? "white"} />}
+          {s.flash &&
+            (s.lamps ?? []).map((p, k) => (
+              <Glow key={k} x={p[0]} y={p[1]} r={300} o={interpolate(f, [0, 3, 30], [1, 0.9, 0.25], clamp)} />
+            ))}
+          {blooms.map((b, k) => (
+            <Glow key={`b${k}`} x={b.x} y={b.y} r={700} o={b.o} color={b.color} />
+          ))}
+        </AbsoluteFill>
+      </AbsoluteFill>
+      {flashO > 0 && <AbsoluteFill style={{ background: "#fff", opacity: flashO }} />}
+    </AbsoluteFill>
+  );
+};
+
+// ------------------------------------------------------------------ grading akhir & tekstur
+const Grade: React.FC = () => (
+  <>
+    {/* vignette kuat + atas/bawah gelap, seperti lampu parkiran */}
+    <AbsoluteFill
+      style={{
+        background:
+          "radial-gradient(ellipse 85% 62% at 50% 52%, transparent 35%, rgba(0,0,0,0.55) 80%, rgba(0,0,0,0.85) 100%), linear-gradient(to bottom, rgba(0,0,0,0.55), transparent 26%, transparent 70%, rgba(0,0,0,0.55))",
+      }}
+    />
+    {/* bayangan sedikit teal */}
+    <AbsoluteFill style={{ background: "rgba(20,60,70,0.10)", mixBlendMode: "soft-light" }} />
+  </>
+);
+
+const Grain: React.FC = () => {
+  const g = useCurrentFrame();
+  const x = Math.floor(random(`gx${g}`) * 512);
+  const y = Math.floor(random(`gy${g}`) * 512);
+  return (
+    <AbsoluteFill
+      style={{
+        backgroundImage: `url(${staticFile("grain.png")})`,
+        backgroundPosition: `${x}px ${y}px`,
+        opacity: 0.09,
+        mixBlendMode: "overlay",
+      }}
+    />
+  );
+};
+
+// ------------------------------------------------------------------ judul di drop
+const Title: React.FC = () => {
+  const f = useCurrentFrame();
+  const d = data.title.d;
+  const p = interpolate(f, [4, 26], [0, 1], { ...clamp, easing: outCubic });
+  const out = interpolate(f, [d - 10, d], [1, 0], { ...clamp, easing: ease });
+  const ls = interpolate(f, [4, d], [46, 22]);
+  const sub = interpolate(f, [14, 32], [0, 1], { ...clamp, easing: outCubic });
+  return (
+    <AbsoluteFill style={{ alignItems: "center", paddingTop: 520, opacity: out, textShadow: "0 0 40px rgba(0,0,0,0.6)" }}>
+      <div
+        style={{
+          fontFamily: SANS,
+          fontWeight: 300,
+          fontSize: 104,
+          letterSpacing: ls,
+          marginLeft: ls,
+          color: "#fff",
+          opacity: p,
+          filter: `blur(${(1 - p) * 10}px)`,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {data.title.main}
+      </div>
+      <div style={{ width: 220 * sub, height: 3, background: "#E1061B", margin: "26px 0 24px", boxShadow: "0 0 18px rgba(255,30,30,0.8)" }} />
+      <div style={{ fontFamily: SANS, fontWeight: 500, fontSize: 28, letterSpacing: 9, marginLeft: 9, color: "rgba(255,255,255,0.85)", opacity: sub }}>
+        {data.title.sub}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// ------------------------------------------------------------------ komposisi
+export const SigraSinematik: React.FC = () => {
+  useFonts();
+  return (
+    <AbsoluteFill style={{ background: "#000" }}>
+      {shots.map((s, i) => (
+        <Sequence key={i} from={s.f - s.ov} durationInFrames={s.d + s.ov} layout="none">
+          <Shot s={s} i={i} />
+        </Sequence>
+      ))}
+      <Grade />
+      <Sequence from={data.title.f} durationInFrames={data.title.d} layout="none">
+        <Title />
+      </Sequence>
+      <Grain />
+      <Audio src={staticFile(data.music)} />
+    </AbsoluteFill>
+  );
+};

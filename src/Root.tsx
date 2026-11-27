@@ -1,8 +1,10 @@
 import { Composition } from "remotion";
 import { GranMaxPromo } from "./GranMaxPromo";
 import { GranMaxIklan } from "./GranMaxIklan";
+import { SigraSinematik } from "./SigraSinematik";
 import timeline from "./timeline.json";
 import iklan from "./iklan.json";
+import sigra from "./sigra.json";
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -21,6 +23,15 @@ export const RemotionRoot: React.FC = () => (
       component={GranMaxIklan}
       durationInFrames={iklan.durationInFrames}
       fps={iklan.fps}
+      width={1080}
+      height={1920}
+    />
+    {/* Sigra: gaya sinematik malam (meniru video referensi) */}
+    <Composition
+      id="SigraSinematik"
+      component={SigraSinematik}
+      durationInFrames={sigra.durationInFrames}
+      fps={sigra.fps}
       width={1080}
       height={1920}
     />
