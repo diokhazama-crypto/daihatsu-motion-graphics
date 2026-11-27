@@ -1,0 +1,97 @@
+[
+ {
+  "id": "s1",
+  "who": "SHERIFF",
+  "text": "Kota ini terlalu kecil... buat kita berdua.",
+  "voice": "id-ID-ArdiNeural",
+  "rate": "-14%",
+  "pitch": "-24Hz"
+ },
+ {
+  "id": "b1",
+  "who": "BANDIT",
+  "text": "Ayo kita selesaikan... sekarang!",
+  "voice": "su-ID-JajangNeural",
+  "rate": "+12%",
+  "pitch": "+22Hz"
+ },
+ {
+  "id": "m1",
+  "who": "SALES",
+  "text": "Permisi, Bapak-bapak! Jangan tembak dulu!",
+  "voice": "id-ID-ArdiNeural",
+  "rate": "+6%",
+  "pitch": "+4Hz"
+ },
+ {
+  "id": "b2",
+  "who": "BANDIT",
+  "text": "Kamu siapa?!",
+  "voice": "su-ID-JajangNeural",
+  "rate": "+10%",
+  "pitch": "+28Hz"
+ },
+ {
+  "id": "m2",
+  "who": "SALES",
+  "text": "Sales Daihatsu. Dari tahun 2026.",
+  "say": "Sales Daihatsu. Dari tahun dua ribu dua puluh enam.",
+  "voice": "id-ID-ArdiNeural",
+  "rate": "+6%",
+  "pitch": "+4Hz",
+  "asr": "Sales Daihatsu dari tahun 2026"
+ },
+ {
+  "id": "m3",
+  "who": "SALES",
+  "text": "Daripada adu cepat tembak... mending adu cepat sampai!",
+  "voice": "id-ID-ArdiNeural",
+  "rate": "+8%",
+  "pitch": "+4Hz"
+ },
+ {
+  "id": "m4",
+  "who": "SALES",
+  "text": "Daihatsu Rocky. Gagah, lega, dan irit.",
+  "voice": "id-ID-ArdiNeural",
+  "rate": "+2%",
+  "pitch": "+4Hz"
+ },
+ {
+  "id": "b3",
+  "who": "BANDIT",
+  "text": "Muat buat bawa... uang bank?",
+  "voice": "su-ID-JajangNeural",
+  "rate": "+4%",
+  "pitch": "+22Hz",
+  "asr": "Muat buat bawa wang bang"
+ },
+ {
+  "id": "s2",
+  "who": "SHERIFF",
+  "text": "Hmm... bisa kredit?",
+  "say": "Hmm. Bisa kredit?",
+  "voice": "id-ID-ArdiNeural",
+  "rate": "-16%",
+  "pitch": "-24Hz",
+  "asr": "Ham. Bisa kredit?"
+ },
+ {
+  "id": "m5",
+  "who": "SALES",
+  "text": "Bisa diatur, Pak!",
+  "voice": "id-ID-ArdiNeural",
+  "rate": "+8%",
+  "pitch": "+6Hz"
+ },
+ {
+  "id": "m6",
+  "who": "SALES",
+  "text": "Mau duel... atau jalan bareng? Yuk, ke dealer Daihatsu!",
+  "voice": "id-ID-ArdiNeural",
+  "rate": "+4%",
+  "pitch": "+4Hz",
+  "say": "Mau duel... atau jalan bareng? Yuk, ke diler Daihatsu!",
+  "asr": "Mau duel atau jalan bareng? Yuk, ke diler Daihatsu"
+ }
+]

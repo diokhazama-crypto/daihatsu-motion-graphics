@@ -1,0 +1,43 @@
+1
+00:00:00,700 --> 00:00:04,129
+Sheriff: Kota ini terlalu kecil... buat kita berdua.
+
+2
+00:00:04,350 --> 00:00:06,580
+Bandit: Ayo kita selesaikan... sekarang!
+
+3
+00:00:12,000 --> 00:00:16,083
+Sales: Permisi, Bapak-bapak! Jangan tembak dulu!
+
+4
+00:00:15,650 --> 00:00:17,450
+Bandit: Kamu siapa?!
+
+5
+00:00:16,750 --> 00:00:20,971
+Sales: Sales Daihatsu. Dari tahun 2026.
+
+6
+00:00:20,750 --> 00:00:24,826
+Sales: Daripada adu cepat tembak... mending adu cepat sampai!
+
+7
+00:00:25,750 --> 00:00:30,657
+Sales: Daihatsu Rocky. Gagah, lega, dan irit.
+
+8
+00:00:30,750 --> 00:00:33,297
+Bandit: Muat buat bawa... uang bank?
+
+9
+00:00:32,750 --> 00:00:35,913
+Sheriff: Hmm... bisa kredit?
+
+10
+00:00:35,700 --> 00:00:37,257
+Sales: Bisa diatur, Pak!
+
+11
+00:00:45,300 --> 00:00:49,929
+Sales: Mau duel... atau jalan bareng? Yuk, ke dealer Daihatsu!

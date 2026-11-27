@@ -1,0 +1,20 @@
+Duel di Depan Bank — credits for third-party material
+
+Picture, characters, music and sound effects: made in code for this film (no samples, no stock footage, no generated images).
+The "Mas Sales" character is drawn from the character sheet supplied by the user; the DAIHATSU and ROCKY names are the user's
+brand material, set in ordinary fonts (no official logo is reproduced).
+
+Fonts (SIL Open Font License 1.1, Google Fonts):
+  Baloo 2 — Ek Type            https://github.com/google/fonts/tree/main/ofl/baloo2
+  Rye — Nicole Fally           https://github.com/google/fonts/tree/main/ofl/rye
+  VT323 — Peter Hull           https://github.com/google/fonts/tree/main/ofl/vt323
+
+Voices: Microsoft Azure neural text-to-speech via edge-tts (https://github.com/rany2/edge-tts, GPL-3.0 tool):
+  id-ID-ArdiNeural (Sales, Sheriff), su-ID-JajangNeural (Bandit). Check Microsoft's terms before commercial use.
+Speech check: faster-whisper (MIT) with the OpenAI Whisper "small" model (MIT).
+Rendering and audio tools: Lemo-Opuscar library core (see its LICENSE), headless Chromium via Playwright, numpy/scipy, ffmpeg.
+
+Code adapted from the Lemo-Opuscar library (MIT License, Copyright (c) 2026 SecondFirst Pty Ltd, trading as LemoLab,
+https://github.com/lemomo-ai/lemo-opuscar, licence text in LICENSES/MIT.txt there): toon.js (vector engine, copied with the frame
+size changed) and the eye, mouth, hand and portal drawing functions in chars.js / world.js (adapted). Permission is hereby granted,
+free of charge, to deal in that code under the MIT terms; it is provided "as is", without warranty of any kind.

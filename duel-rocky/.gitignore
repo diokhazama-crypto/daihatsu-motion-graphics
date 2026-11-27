@@ -1,0 +1,6 @@
+out/
+stills/
+voices/*.wav
+fonts/*.woff2
+events.json
+music/
