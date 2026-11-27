@@ -52,12 +52,13 @@ function falseFront(x0, x1, h, label, { col = NIGHT.wood, colS = NIGHT.woodS, st
 }
 // —— the street ——
 export function street(t, { far = true } = {}) {
-  bands(NIGHT.sky, -2600, -150);
+  bands(NIGHT.sky, -4400, -150);
   // stars (twinkle on twos)
   const tq = Math.floor(t * 12);
-  for (let i = 0; i < 70; i++) { const x = -1400 + hash(i * 3.1) * 2800, y = -2500 + hash(i * 5.7) * 1500, tw = hash(i + tq * .37) > .85 ? 1.6 : 1; dot(x, y, (2 + hash(i * 9.1) * 2.4) * tw, NIGHT.star); }
+  for (let i = 0; i < 110; i++) { const x = -1900 + hash(i * 3.1) * 3800, y = -4300 + hash(i * 5.7) * 2900, tw = hash(i + tq * .37) > .85 ? 1.6 : 1; dot(x, y, (2 + hash(i * 9.1) * 2.4) * tw, NIGHT.star); }
   // moon (flat, no glow)
-  shape(ell(-420, -1380, 90, 90, 40), { fill: NIGHT.moon, lw: 6, shade: () => { fillOnly(ell(-380, -1360, 70, 80, 30), NIGHT.moonS, { boil: .3 }); dot(-450, -1400, 12, NIGHT.moonS); dot(-410, -1330, 8, NIGHT.moonS); } });
+  push(); translate(-560, -2150); shape(ell(0, 0, 110, 110, 40), { fill: NIGHT.moon, lw: 6, shade: () => { fillOnly(ell(40, 20, 86, 98, 30), NIGHT.moonS, { boil: .3 }); dot(-30, -20, 14, NIGHT.moonS); dot(10, 50, 9, NIGHT.moonS); } }); pop();
+  push(); scale(2.2);
   // far silhouettes: mesas
   if (far) fillOnly(spline([[-1600, -300], [-1300, -380], [-1100, -560], [-900, -560], [-760, -380], [-200, -380], [600, -420], [760, -620], [980, -640], [1100, -420], [1600, -400], [1600, 0], [-1600, 0]]), NIGHT.far, { boil: .3 });
   // buildings
@@ -66,12 +67,15 @@ export function street(t, { far = true } = {}) {
   falseFront(1120, 1600, 520, '', { sign: false, step: false });
   falseFront(-1500, -960, 520, '', { sign: false, step: false, col: '#40508e', colS: '#32407a' });
   bank();
+  pop();
+  push(); scale(2.2, 1);
   // boardwalk
   shape(rect(-1600, -34, 3200, 34), { fill: NIGHT.walk, lw: 6, shade: () => { for (let x = -1600; x < 1600; x += 60) stroke([[x, -34], [x, 0]], 3, { line: NIGHT.walkL, boil: .2 }); } });
+  pop();
   // road (flat colour bands toward the camera)
-  bands(NIGHT.road, 0, 1500, -1700, 1700);
-  for (let i = 0; i < 60; i++) { const x = -1400 + hash(i * 7.3) * 2800, y = 30 + Math.pow(hash(i * 2.9), 1.4) * 1300, r = 4 + y * .012; fillOnly(ell(x, y, r * 1.4, r * .8, 10), NIGHT.pebble, { boil: .3 }); fillOnly(ell(x - r * .3, y - r * .3, r * .5, r * .3, 8), NIGHT.pebbleHi, { boil: .2 }); }
-  for (let i = 0; i < 8; i++) { const x = -1200 + hash(i * 1.9) * 2400, y = 80 + hash(i * 4.4) * 1000; stroke([[x - 10, y], [x - 2, y - 26], [x + 4, y - 4], [x + 12, y - 22], [x + 10, y]], 4, { line: '#7b6f9a', closed: false }); }
+  bands(NIGHT.road, 0, 1700, -2600, 2600);
+  for (let i = 0; i < 90; i++) { const x = -2000 + hash(i * 7.3) * 4000, y = 30 + Math.pow(hash(i * 2.9), 1.4) * 1600, r = 4 + y * .012; fillOnly(ell(x, y, r * 1.4, r * .8, 10), NIGHT.pebble, { boil: .3 }); fillOnly(ell(x - r * .3, y - r * .3, r * .5, r * .3, 8), NIGHT.pebbleHi, { boil: .2 }); }
+  for (let i = 0; i < 12; i++) { const x = -1800 + hash(i * 1.9) * 3600, y = 80 + hash(i * 4.4) * 1300; stroke([[x - 10, y], [x - 2, y - 26], [x + 4, y - 4], [x + 12, y - 22], [x + 10, y]], 4, { line: '#7b6f9a', closed: false }); }
 }
 
 // —— the portal: vertical oval, pink, the only glowing thing ——

@@ -43,129 +43,118 @@ function whipLines(u) {   // speed lines during a whip pan (screen space)
   for (let i = 0; i < 16; i++) { const y = hash(i * 3.3) * H, x = hash(i * 7.7) * W * .6; stroke([[x, y], [x + 300 + hash(i) * 400, y]], 6 + hash(i * 2) * 10, { line: `rgba(255,255,255,${.35 * a})`, boil: .3 }); }
 }
 
-// —— where everyone is (street world), as a function of time ——
-const SX = { band: -300, sher: 300 };
+// —— where everyone is (street world, real scale: people 600 units tall, 1 m ≈ 350 units) ——
+const SX = { band: -430, sher: 430 }, PC = [0, -480], PR = 380, CAR = { x: 0, y: 420, s: 2.2 }, SALES2 = [820, 430];
 function salesPos(t) {
   if (t < 11.6) return null;
-  if (t < K.land) { const u = seg(t, 11.6, K.land); return { x: 0, y: lerp(-180, 120, ei(u)) - Math.sin(u * Math.PI) * 60, s: lerp(.55, 1, eo(u)), sq: lerp(1.35, 1.1, u), fly: 1 }; }
-  if (t < 20.6) return { x: 0, y: 120, sq: land(t, K.land) };
-  if (t < K.hop) return { x: 380, y: 300, sq: 1 };
+  if (t < K.land) { const u = seg(t, 11.6, K.land); return { x: 0, y: lerp(-260, 150, ei(u)) - Math.sin(u * Math.PI) * 80, s: lerp(.45, 1, eo(u)), sq: lerp(1.2, 1.05, u), fly: 1 }; }
+  if (t < 20.6) return { x: 0, y: 150, sq: land(t, K.land, .1) };
+  if (t < K.hop) return { x: SALES2[0], y: SALES2[1], sq: 1 };
   return null;
 }
 function carPos(t) {
   if (t < K.snap + .1) return null;
-  if (t < K.carLand) { const u = seg(t, K.snap + .1, K.carLand); return { x: 0, y: lerp(-430, 300, ei(u)), s: lerp(.25, 1, eo(u)), sq: lerp(1.25, 1, u) }; }
-  if (t < K.carHop) return { x: 0, y: 300, s: 1, sq: land(t, K.carLand, .22, .5) * (t > K.engine && t < K.engine + .5 ? 1 + .02 * Math.sin(t * 60) : 1) };
-  if (t < K.suck0) { const u = seg(t, K.carHop, K.suck0); return { x: 0, y: 300 - Math.sin(u * Math.PI) * 60, s: 1, sq: 1 + Math.sin(u * Math.PI) * .06 }; }
-  if (t < K.suck1) { const u = ei(seg(t, K.suck0, K.suck1)); return { x: 0, y: lerp(300, -430, u), s: lerp(1, .05, u), sq: lerp(1, 1.5, u), sx: lerp(1, .6, u) }; }
+  if (t < K.carLand) { const u = seg(t, K.snap + .1, K.carLand); return { x: 0, y: lerp(PC[1] + 100, CAR.y, ei(u)), s: CAR.s * lerp(.25, 1, eo(u)), sq: lerp(1.15, 1, u) }; }
+  if (t < K.carHop) return { x: 0, y: CAR.y, s: CAR.s, sq: land(t, K.carLand, .1, .5) * (t > K.engine && t < K.engine + .5 ? 1 + .012 * Math.sin(t * 60) : 1) };
+  if (t < K.suck0) { const u = seg(t, K.carHop, K.suck0); return { x: 0, y: CAR.y - Math.sin(u * Math.PI) * 80, s: CAR.s, sq: 1 + Math.sin(u * Math.PI) * .04 }; }
+  if (t < K.suck1) { const u = ei(seg(t, K.suck0, K.suck1)); return { x: 0, y: lerp(CAR.y, PC[1] + 120, u), s: CAR.s * lerp(1, .04, u), sq: lerp(1, 1.5, u), sx: lerp(1, .6, u) }; }
   return null;
 }
 function portalOpen(t) {
   if (t < K.boom) return 0;
   if (t < K.close0) return popOpen(t - K.boom);
-  return 1 - back(seg(t, K.close0, K.close1), 1.6) * 1;
+  return 1 - back(seg(t, K.close0, K.close1), 1.6);
 }
+const jitterH = (t, k, a) => (hash(Math.floor(t * 12) + k) - .5) * a;
+const HOVER = [22, 176];   // the gun hand hovering above the holster
 
-// acting
-function sheriffP(t, shot) {
+// acting (arm targets h are hand offsets from the shoulder, reach ≈ 200)
+function sheriffP(t) {
   const tk = talk('SHERIFF', t), tq = q(t);
-  const P = { x: SX.sher, face: -1, lid: .5, look: [.2, 0], mouth: { o: tk.o, w: tk.w, sm: -.2 }, blink: blink(t, 3), straw: Math.sin(tq * 3) * .08, armR: { h: [40, 118], bend: 14 }, armL: { h: [-22, 148], bend: -10 } };
-  if (t < 6.6) P.straw = tk.talking ? Math.sin(tq * 9) * .12 : Math.sin(tq * 2.2) * .1;
-  if (t >= 6.6 && t < 9.6) { P.armR.h = [40 + (hash(Math.floor(t * 12)) - .5) * 6, 118 + (hash(Math.floor(t * 12) + 5) - .5) * 4]; P.lid = .58; }
-  if (t >= K.boom && t < 11.6) { P.lid = 0; P.look = [0, -.2]; P.straw = .6; P.sq = land(t, K.boom + .05, .12, .4); P.brow = 1; }
-  if (t >= 11.6 && t < 20.6) { P.lid = .25; P.look = [-.6, .1]; P.straw = -.2; }
-  if (t >= 20.6 && t < 30.6) { P.lid = .4; P.look = [-.8, 0]; }
-  if (t >= K.carLand && t < K.carLand + 1.2) { P.lid = .05; P.straw = .5; }
-  if (t >= 32.6 && t < 37.1) {
-    const toS = t >= K.toSales;
-    P.look = toS ? [-1, 0] : [.9, 0]; P.lid = toS ? .4 : .62; P.browIn = toS ? 0 : 1; P.straw = toS ? Math.sin(tq * 6) * .2 : 0;
-  }
-  if (t >= 37.1) { P.look = [.9, 0]; P.lid = .5; P.straw = t > K.nod ? -.3 : 0; if (t > K.relax) P.armR = { h: [20, 150], bend: 8 }; if (t > K.nod && t < K.nod + .4) P.headTilt = Math.sin(seg(t, K.nod, K.nod + .4) * Math.PI) * .12; }
+  const P = { x: SX.sher, face: -1, lid: .45, look: [.3, 0], mouth: { o: tk.o, w: tk.w, sm: -.1 }, blink: blink(t, 3), straw: Math.sin(tq * 2.2) * .1, armR: { h: HOVER.slice() }, armL: { h: [-12, 190] } };
+  if (t < 6.6 && tk.talking) P.straw = Math.sin(tq * 9) * .12;
+  if (t >= 6.6 && t < 9.6) { P.armR.h = [HOVER[0] + jitterH(t, 0, 6), HOVER[1] + jitterH(t, 5, 4)]; P.lid = .55; P.browIn = .6; }
+  if (t >= K.boom && t < 11.6) { P.lid = 0; P.eyeS = 1.3; P.look = [0, -.2]; P.straw = .6; P.sq = land(t, K.boom + .05, .06, .4); P.brow = 1; }
+  if (t >= 11.6 && t < 20.6) { P.lid = .25; P.look = [-.5, .1]; P.straw = -.2; }
+  if (t >= 20.6 && t < 30.6) { P.lid = .4; P.look = [-.8, .2]; }
+  if (t >= K.carLand && t < K.carLand + 1.2) { P.lid = 0; P.eyeS = 1.2; P.straw = .5; }
+  if (t >= 32.6 && t < 37.1) { const toS = t >= K.toSales; P.look = toS ? [-1, 0] : [.9, 0]; P.lid = toS ? .4 : .6; P.browIn = toS ? 0 : 1; P.straw = toS ? Math.sin(tq * 6) * .2 : 0; P.turn = .4; }
+  if (t >= 37.1) { P.look = [.9, 0]; P.lid = .5; if (t > K.nod) { P.straw = -.3; P.mouth.sm = .5; } if (t > K.relax) P.armR = { h: [8, 192] }; if (t > K.nod && t < K.nod + .4) P.headTilt = Math.sin(seg(t, K.nod, K.nod + .4) * Math.PI) * .1; }
   return P;
 }
-function banditP(t, shot) {
-  const tk = talk('BANDIT', t), tq = q(t);
-  const P = { x: SX.band, face: 1, t, nerv: .55, grin: tk.talking ? 0 : 1, look: [.3, 0], mouth: { o: tk.o, w: tk.w }, sweat: t * .7, blink: blink(t, 11), armR: { h: [36, 120], bend: 12 }, armL: { h: [-24, 140], bend: -12 } };
-  if (t >= 6.6 && t < 9.6) { P.nerv = .9; P.armR.h = [36 + (hash(Math.floor(t * 12) + 2) - .5) * 10, 120]; }
-  if (t >= K.boom && t < 11.6) { P.eyeS = 1.25; P.pupil = 2.4; P.brow = 1.5; P.grin = 0; P.mouth = { o: .7, w: .7 }; P.look = [.2, -.3]; const u = seg(t, K.boom, K.boom + .45); P.bob = -Math.sin(u * Math.PI) * 70; P.sq = land(t, K.boom + .45, .2, .4); }
-  if (t >= 11.6 && t < 15.6) { P.look = [1, .1]; P.eyeS = 1.12; P.nerv = .7; }
-  if (t >= 15.6 && t < 16.6) { P.eyeS = 1.25; P.pupil = 2.4; P.brow = 1.6; P.look = [.6, 0]; P.nerv = 1.2; }
-  if (t >= K.carLand && t < 30.6) { P.eyeS = 1.15; P.look = [1, .3]; P.grin = tk.talking ? 0 : 1; }
-  if (t >= 30.6 && t < 32.6) { P.look = t < 31.6 ? [-.7, -.7] : [.8, -.2]; P.brow = -.4; P.nerv = .3; P.grin = tk.talking ? 0 : 1; }
+function banditP(t) {
+  const tk = talk('BANDIT', t);
+  const P = { x: SX.band, face: 1, t, nerv: .5, grin: !tk.talking, look: [.4, 0], mouth: { o: tk.o, w: tk.w }, sweat: t * .7, blink: blink(t, 11), armR: { h: HOVER.slice() }, armL: { h: [-12, 188] }, brow: .6 };
+  if (t >= 6.6 && t < 9.6) { P.nerv = .9; P.armR.h = [HOVER[0] + jitterH(t, 2, 10), HOVER[1]]; }
+  if (t >= K.boom && t < 11.6) { P.eyeS = 1.45; P.pupil = 1; P.brow = 1.5; P.grin = false; P.mouth = { o: .7, w: .7 }; P.look = [.2, -.3]; const u = seg(t, K.boom, K.boom + .45); P.bob = -Math.sin(u * Math.PI) * 60; P.sq = land(t, K.boom + .45, .08, .4); P.armL = { h: [-90, -60] }; }
+  if (t >= 11.6 && t < 15.6) { P.look = [1, .1]; P.eyeS = 1.2; P.nerv = .7; }
+  if (t >= 15.6 && t < 16.6) { P.eyeS = 1.45; P.pupil = 1; P.brow = 1.6; P.look = [.6, 0]; P.nerv = 1.2; }
+  if (t >= K.carLand && t < 30.6) { P.eyeS = 1.2; P.look = [1, .3]; }
+  if (t >= 30.6 && t < 32.6) { P.look = t < 31.6 ? [-.7, -.5] : [.8, -.2]; P.brow = -.4; P.nerv = .3; P.armL = { h: [70, 120] }; P.armR = { h: [-20, 120], fist: true }; }
   if (t >= 32.6 && t < 37.1) { P.look = [.8, 0]; P.brow = 1.2; }
-  if (t >= 37.1) { P.look = [1, 0]; P.nerv = .25; P.brow = .6; if (t > K.nod) { P.grin = 1; P.brow = -.3; } if (t > K.relax) P.armR = { h: [10, 150], bend: 6 }; }
+  if (t >= 37.1) { P.look = [1, 0]; P.nerv = .25; P.brow = .6; if (t > K.nod) { P.grin = true; P.brow = -.3; } if (t > K.relax) P.armR = { h: [8, 190] }; }
   return P;
 }
 function salesP(t) {
   const p = salesPos(t); if (!p) return null;
-  const tk = talk('SALES', t), tq = q(t);
-  const P = { x: p.x, y: p.y, s: p.s ?? 1, sq: p.sq, face: 1, turn: .15, mouth: { o: tk.o, w: tk.w, sm: .7 }, blink: blink(t, 23), look: [0, .05], armR: { h: [24, 146], bend: 12 }, armL: { h: [-16, 146], bend: -10 } };
-  if (p.fly) { P.armR = { h: [60, -120], bend: -10 }; P.armL = { h: [-70, -110], bend: 10 }; P.legL = [-10, -30]; P.legR = [20, -10]; P.shadow = false; }
-  if (t >= K.land && t < 15.6) { const u = seg(t, K.thumb - .2, K.thumb); P.armR = { h: [lerp(24, 70, u), lerp(146, -40, u)], bend: lerp(12, -30, u), end: u > .5 ? 'thumb' : 'hand' }; if (t < K.thumb) P.happy = t > K.land + .1; P.look = [-.4, 0]; }
-  if (t >= 16.6 && t < 20.6) { P.turn = .1; const u = seg(t, K.card - .25, K.card); P.armR = { h: [lerp(24, -30, u), lerp(146, 110, u)], bend: lerp(12, 30, u), fist: u > .5 }; P.armL = { h: [-30, 150], bend: -14 }; }
+  const tk = talk('SALES', t);
+  const P = { x: p.x, y: p.y, s: p.s ?? 1, sq: p.sq, face: 1, turn: .2, mouth: { o: tk.o, w: tk.w, sm: .6 }, blink: blink(t, 23), look: [0, .05], armR: { h: [10, 192] }, armL: { h: [-10, 192] } };
+  if (p.fly) { P.armR = { h: [60, -170] }; P.armL = { h: [-60, -170] }; P.legL = [-10, -60]; P.legR = [24, -24]; P.shadow = false; }
+  if (t >= K.land && t < 15.6) { const u = seg(t, K.thumb - .2, K.thumb); P.armR = { h: [lerp(10, 34, u), lerp(192, 92, u)], end: u > .5 ? 'thumb' : 'open', bend: u > .5 ? -1 : 1 }; P.happy = t > K.land + .1 && t < K.thumb + .3; P.look = [-.3, 0]; }
+  if (t >= 16.6 && t < 20.6) { P.turn = .1; const u = seg(t, K.card - .25, K.card); P.armR = { h: [lerp(10, -54, u), lerp(192, 96, u)], fist: u > .5 }; }
   if (t >= 20.6 && t < 25.6) {
-    P.face = -1; P.turn = .5; P.look = [.6, -.3];
+    P.face = -1; P.turn = .5; P.look = [.6, -.4];
     const u = seg(t, K.snap - .3, K.snap);
-    P.armR = { h: [lerp(40, 70, u), lerp(120, -150, u)], bend: lerp(10, -20, u), fist: u > .5 };
-    if (t > K.carLand) { P.happy = true; P.armR = { h: [80, -40], bend: -30, end: 'thumb' }; }
+    P.armR = { h: [lerp(10, 80, u), lerp(192, -110, u)], fist: u > .5 };
+    if (t > K.carLand) { P.happy = true; P.armR = { h: [34, 92], end: 'thumb', bend: -1 }; }
   }
-  if (t >= 25.6 && t < 35.6) { P.face = -1; P.turn = .45; P.look = [.7, .1]; P.armR = { h: [120, 40], bend: -20 }; if (t > K.irit) P.armL = { h: [70, -60], bend: -30, end: 'thumb' }; }
-  if (t >= 30.6 && t < 35.6 && t > 32) P.look = [-.4, 0];
-  if (t >= 35.6) { P.face = -1; P.turn = .3; P.happy = t > K.thumb2 + .1 && t < 37.1; P.armR = { h: [50, -60], bend: -30, end: 'thumb' }; P.armL = { h: [-16, 146], bend: -10 }; P.look = [-.6, 0]; }
+  if (t >= 25.6 && t < 35.6) { P.face = -1; P.turn = .45; P.look = [.7, .1]; P.armR = { h: [170, 70] }; if (t > K.irit) P.armL = { h: [30, 92], end: 'thumb' }; }
+  if (t >= 32 && t < 35.6) P.look = [-.4, 0];
+  if (t >= 35.6) { P.face = -1; P.turn = .3; P.happy = t > K.thumb2 + .1 && t < 37.1; P.armR = { h: [34, 92], end: 'thumb', bend: -1 }; P.armL = { h: [-10, 192] }; P.look = [-.5, 0]; }
   return P;
 }
 
 // —— the street world with actors ——
 function drawStreet(t, shot, { noSales = false } = {}) {
   street(t);
-  const tq = q(t), sP = noSales ? null : salesP(t), car = carPos(t), po = portalOpen(t);
-  // tumbleweed behind actors in the opening; in front at the end
-  if (t < 3) tumbleweed(lerp(-800, 900, seg(t, 0, 3)), 60 - Math.abs(Math.sin(t * 5)) * 50, 56, t * 5);
-  portal(0, -430, 210, t, { open: po });
-  // hop into the car: actors arc toward the car and vanish
-  const hopU = seg(t, K.hop, K.riders);
-  const hopTo = (P, x0, y0) => { if (t < K.hop) return P; if (t >= K.riders) return null; const u = eio(hopU); P.x = lerp(x0, 0, u); P.y = lerp(y0, 200, u) - Math.sin(u * Math.PI) * 260; P.s = lerp(1, .45, u); P.shadow = false; P.legL = [-10, -30]; P.legR = [10, -24]; return P; };
-  const bP = hopTo(banditP(t, shot), SX.band, 0), shP = hopTo(sheriffP(t, shot), SX.sher, 0);
-  let sp = sP; if (!sp && t >= K.hop && t < K.riders) { sp = salesP(K.hop - .01); sp = hopTo(sp, 380, 300); }
+  const sP = noSales ? null : salesP(t), car = carPos(t), po = portalOpen(t);
+  if (t < 3) tumbleweed(lerp(-1300, 1300, seg(t, 0, 3)), 160 - Math.abs(Math.sin(t * 4)) * 70, 90, t * 4);
+  portal(PC[0], PC[1], PR, t, { open: po });
+  const win = [CAR.x, CAR.y - 150 * CAR.s];
+  const hopTo = (P, x0, y0) => { if (!P || t < K.hop) return P; if (t >= K.riders) return null; const u = eio(seg(t, K.hop, K.riders)); P.x = lerp(x0, win[0], u); P.y = lerp(y0, win[1], u) - Math.sin(u * Math.PI) * 320; P.s = lerp(1, .3, u); P.shadow = false; P.legL = [-10, -60]; P.legR = [20, -40]; return P; };
+  const bP = hopTo(banditP(t), SX.band, 0), shP = hopTo(sheriffP(t), SX.sher, 0);
+  let sp = sP; if (!noSales && !sp && t >= K.hop && t < K.riders) sp = hopTo(salesP(K.hop - .01), SALES2[0], SALES2[1]);
   const actors = [];
   if (bP) actors.push([bP.y || 0, () => bandit(bP)]);
   if (shP) actors.push([shP.y || 0, () => sheriff(shP)]);
   if (sp) actors.push([sp.y || 0, () => sales(sp)]);
-  if (car) actors.push([299, () => rocky({ x: car.x, y: car.y, s: car.s, sq: car.sq, sx: car.sx, riders: t >= K.riders, wheelRot: t > K.carHop ? t * 18 : 0, hatBounce: Math.sin(t * 20) * .05, shadow: car.s > .8 })]);
+  if (car) actors.push([CAR.y - 1, () => rocky({ x: car.x, y: car.y, s: car.s, sq: car.sq, sx: car.sx, riders: t >= K.riders, wheelRot: t > K.carHop ? t * 18 : 0, hatBounce: Math.sin(t * 20) * .05, shadow: car.s > CAR.s * .8 })]);
   actors.sort((a, b) => a[0] - b[0]).forEach(a => a[1]());
-  // puffs where people pop into the car
-  if (t >= K.riders - .05 && t < K.riders + .35) { const u = seg(t, K.riders - .05, K.riders + .35); for (let i = 0; i < 7; i++) { const a = i / 7 * TAU; fillOnly(ell(-60 + Math.cos(a) * 180 * u, 120 + Math.sin(a) * 60 * u, 40 * (1 - u) + 6, 30 * (1 - u) + 6, 14), '#e9e6ff', { boil: .5 }); } }
-  // landing dust for the car
-  if (t >= K.carLand && t < K.carLand + .5) { const u = seg(t, K.carLand, K.carLand + .5); for (let i = 0; i < 8; i++) { const sx = i < 4 ? -1 : 1, k = i % 4; shape(ell(sx * (300 + u * 160 + k * 40), 290 - k * 18 - u * 30, 40 * (1 - u) + 10, 26 * (1 - u) + 6, 14), { fill: '#8f8fc8', lw: 5, alpha: 1 - u }); } }
-  if (t >= K.weed0 && t < K.weed1) tumbleweed(lerp(-700, 700, seg(t, K.weed0, K.weed1)), 200 - Math.abs(Math.sin(t * 5)) * 50, 60, t * 5);
+  if (t >= K.riders - .05 && t < K.riders + .35) { const u = seg(t, K.riders - .05, K.riders + .35); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; fillOnly(ell(win[0] + Math.cos(a) * 380 * u, win[1] + Math.sin(a) * 120 * u, 70 * (1 - u) + 10, 50 * (1 - u) + 8, 14), '#e9e6ff', { boil: .5 }); } }
+  if (t >= K.carLand && t < K.carLand + .5) { const u = seg(t, K.carLand, K.carLand + .5); for (let i = 0; i < 8; i++) { const sx = i < 4 ? -1 : 1, k = i % 4; shape(ell(sx * (680 + u * 260 + k * 70), CAR.y - 10 - k * 30 - u * 40, 70 * (1 - u) + 16, 44 * (1 - u) + 10, 14), { fill: '#8f8fc8', lw: 4, alpha: 1 - u }); } }
+  if (t >= K.weed0 && t < K.weed1) tumbleweed(lerp(-1200, 1200, seg(t, K.weed0, K.weed1)), 260 - Math.abs(Math.sin(t * 4)) * 70, 90, t * 4);
 }
 
-// —— shots ——
+// —— shots (1080×1920) ——
 function shot(t) {
   const sh = shotAt(t), u = (t - sh.t0) / (sh.t1 - sh.t0);
   switch (sh.id) {
-    case 'wide1': cam(0, -430, lerp(.95, 1.02, ss(u))); return drawStreet(t, sh);
-    case 'cuSher': cam(300, -450, lerp(2.6, 2.7, u)); return drawStreet(t, sh);
-    case 'cuBand': cam(-300, -440, lerp(2.6, 2.75, u), t, talk('BANDIT', t).talking && t > 5.5 && t < 6.1 ? 10 : 0); return drawStreet(t, sh);
-    case 'hands': {
-      const w = seg(t, K.whip1, K.whip1 + .22), e = eio(w);
-      cam(lerp(-216, 214, e), lerp(-215, -222, e), 4.6); drawStreet(t, sh); whipLines(w); return;
-    }
-    case 'eyes': {
-      const w = seg(t, K.whip2, K.whip2 + .2), e = eio(w);
-      cam(lerp(-292, 250, e), lerp(-458, -494, e), 5.6); drawStreet(t, sh); whipLines(w); return;
-    }
-    case 'portal': cam(0, -400, .95, t, t < K.boom + .35 ? 26 * (1 - seg(t, K.boom, K.boom + .35)) : 0); return drawStreet(t, sh);
-    case 'arrive': cam(0, lerp(-300, -240, ss(seg(t, 11.6, 12.2))), 1.25); return drawStreet(t, sh);
-    case 'cuBand2': cam(-300, -440, 2.8, t, t > K.shake2 && t < K.shake2 + .3 ? 16 : 0); return drawStreet(t, sh);
-    case 'cuSales': cam(0, -170, lerp(2.1, 2.3, ss(u))); return drawStreet(t, sh);
-    case 'snap': { const f = seg(t, K.snap, K.carLand + .2); cam(lerp(40, 60, f), lerp(-330, -120, eio(f)), lerp(1.05, .98, f), t, t > K.carLand && t < K.carLand + .3 ? 22 : 0); return drawStreet(t, sh); }
-    case 'rocky': cam(lerp(80, 100, u), lerp(-20, -40, u), lerp(1.12, 1.18, u)); return drawStreet(t, sh);
-    case 'cuBand3': cam(-300, -440, 2.7); return drawStreet(t, sh);
-    case 'cuSher2': cam(300, -450, lerp(2.6, 2.75, u)); return drawStreet(t, sh, { noSales: true });
-    case 'cuSales2': cam(380, -120, 2.35, t, 0); return drawStreet(t, sh);
-    case 'pause': cam(0, -320, lerp(.98, 1.08, ss(u))); return drawStreet(t, sh);
-    case 'leave': cam(0, lerp(-260, -320, ss(u)), lerp(.98, .86, ss(seg(t, K.carHop, K.close1)))); return drawStreet(t, sh);
+    case 'wide1': cam(0, -720, lerp(.8, .86, ss(u))); return drawStreet(t, sh);
+    case 'cuSher': cam(430, -470, lerp(4.2, 4.35, u)); return drawStreet(t, sh);
+    case 'cuBand': cam(-430, -470, lerp(4.2, 4.4, u), t, talk('BANDIT', t).talking && t > 5.5 && t < 6.1 ? 10 : 0); return drawStreet(t, sh);
+    case 'hands': { const w = seg(t, K.whip1, K.whip1 + .22), e = eio(w); cam(lerp(-350, 346, e), -300, 6.2); drawStreet(t, sh); whipLines(w); return; }
+    case 'eyes': { const w = seg(t, K.whip2, K.whip2 + .2), e = eio(w); cam(lerp(-422, 421, e), lerp(-552, -556, e), 11); drawStreet(t, sh); whipLines(w); return; }
+    case 'portal': cam(0, -640, .8, t, t < K.boom + .35 ? 26 * (1 - seg(t, K.boom, K.boom + .35)) : 0); return drawStreet(t, sh);
+    case 'arrive': cam(0, lerp(-460, -380, ss(seg(t, 11.6, 12.2))), .95); return drawStreet(t, sh);
+    case 'cuBand2': cam(-430, -475, 4.6, t, t > K.shake2 && t < K.shake2 + .3 ? 16 : 0); return drawStreet(t, sh);
+    case 'cuSales': cam(0, -330, lerp(3.5, 3.75, ss(u))); return drawStreet(t, sh);
+    case 'snap': { const f = seg(t, K.snap, K.carLand + .2); cam(lerp(220, 250, f), lerp(-520, -300, eio(f)), lerp(.6, .57, f), t, t > K.carLand && t < K.carLand + .3 ? 22 : 0); return drawStreet(t, sh); }
+    case 'rocky': cam(lerp(150, 170, u), lerp(-80, -100, u), lerp(.6, .64, u)); return drawStreet(t, sh);
+    case 'cuBand3': cam(-430, -470, 4.3); return drawStreet(t, sh);
+    case 'cuSher2': cam(430, -470, lerp(4.2, 4.4, u)); return drawStreet(t, sh, { noSales: true });
+    case 'cuSales2': cam(SALES2[0], SALES2[1] - 490, 3.6); return drawStreet(t, sh);
+    case 'pause': cam(0, -380, lerp(.74, .82, ss(u))); return drawStreet(t, sh);
+    case 'leave': cam(0, lerp(-520, -600, ss(u)), lerp(.62, .52, ss(seg(t, K.carHop, K.close1)))); return drawStreet(t, sh);
     case 'end': return endCard(t);
   }
 }
@@ -174,11 +163,11 @@ function shot(t) {
 function endCard(t) {
   cam(0, -200, 1);
   dawn(t);
-  const c = land(t, 44.6, .1, .5);
-  rocky({ x: 170, y: 80, s: .95, sq: c, riders: 'cowboys', hatBounce: Math.sin(t * 6) * .04 });
+  const c = land(t, 44.6, .06, .5);
+  rocky({ x: 260, y: 170, s: 1.9, sq: c, riders: 'cowboys', hatBounce: Math.sin(t * 6) * .04 });
   const tk = talk('SALES', t), u = seg(t, 46.4, 46.7);
-  sales({ x: -250, y: 760, s: 1.55, face: 1, turn: .15, mouth: { o: tk.o, w: tk.w, sm: .8 }, blink: blink(t, 29), look: [0, .05], happy: !tk.talking && t > 49.6,
-    armR: { h: [lerp(24, 70, u), lerp(146, -40, u)], bend: lerp(12, -30, u), end: u > .5 ? 'thumb' : 'hand' }, armL: { h: [-16, 146], bend: -10 } });
+  sales({ x: -210, y: 1080, s: 2.6, face: 1, turn: .2, mouth: { o: tk.o, w: tk.w, sm: .7 }, blink: blink(t, 29), look: [0, .05], happy: !tk.talking && t > 49.6, shadow: false,
+    armR: { h: [lerp(10, 34, u), lerp(192, 92, u)], end: u > .5 ? 'thumb' : 'open', bend: u > .5 ? -1 : 1 }, armL: { h: [-10, 192] } });
   // title
   const a = seg(q(t), K.title, K.title + .3), s = a < 1 ? back(a, 2.2) : 1;
   reset(); translate(W / 2, 330); rotate(-.04); scale(s);

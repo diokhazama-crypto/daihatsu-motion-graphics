@@ -1,351 +1,343 @@
-// chars.js — the cast: Sheriff (deadpan), Bandit (panic), Mas Sales (the user, drawn from their character sheet) + Rocky + props
-// Local coordinates: origin between the feet, y down. face = 1 looks right (3/4 view), -1 mirrors.
+// chars.js — the cast with realistic human proportions (≈7.5 heads tall), drawn as flat-colour illustration with boiling outlines.
+// Sheriff (deadpan), Bandit (panic), Mas Sales (the user, from their character sheet) + Rocky (real scale) + props.
+// Body units: origin between the feet, y down, a figure is 600 units tall (1 m ≈ 350 units). face = 1 looks right, -1 mirrors.
 import { clamp, lerp, hash, TAU } from '/core/lib.js';
-import { INK, push, pop, translate, rotate, scale, shape, fillOnly, stroke, ell, arc, spline, rr, rect, noodle, quad, dot, text } from './toon.js';
+import { INK, push, pop, translate, rotate, scale, shape, fillOnly, stroke, ell, arc, spline, rr, rect, noodle, quad, dot, text, zoom } from './toon.js';
 
 export const PAL = {
-  white: '#ffffff', mouthIn: '#4a1a2a', tongue: '#e8637a', sweat: '#bfe9ff',
-  skS: '#f2c9a0', skSs: '#d9a57c', hatS: '#e9d29a', hatSs: '#c4a666', band: '#6b3f22', coat: '#8a5530', coatS: '#6a3e20',
-  shirtS: '#2a9d8f', shirtSs: '#1f7a70', pantS: '#6f7b8c', pantSs: '#56606f', boot: '#5a3420', bootS: '#3e2214', mus: '#3a2416', straw: '#e8d36a', badge: '#f2c641', badgeS: '#c99a1e',
-  skB: '#f0c094', skBs: '#d39a6c', hatB: '#2a2632', hatBs: '#17141c', hatBand: '#d9a63a', red: '#d0342c', redS: '#a32420', fringe: '#f2d8a8',
-  pantB: '#3b3648', pantBs: '#2a2635', bootB: '#1f1b24', buckle: '#e0b43c',
-  skM: '#e2ac80', skMs: '#c58b5e', hair: '#1d1a22', hairS: '#3a3442', navy: '#1f3c8f', navyS: '#152c6b', pipe: '#f1ead8',
-  lan: '#8fd3f4', lanP: '#f07aa8', chino: '#dccbad', chinoS: '#bfac8b', shoe: '#26346a', sole: '#f4f0e6', soleR: '#d8333a', motif: '#7fc6f0', motif2: '#cdeefe',
+  white: '#fbfaf7', mouthIn: '#5a1f2a', tongue: '#d86a78', teeth: '#f6f2e8', sweat: '#bfe9ff', lip: '#b9655a', iris: '#4a2e1e',
+  skS: '#e7b68c', skSs: '#c99268', hatS: '#d9bf86', hatSs: '#b39a62', band: '#5a341c', coat: '#7d4f2c', coatS: '#5f3a1e',
+  shirtS: '#2a8f84', shirtSs: '#1f6e66', pantS: '#6b7584', pantSs: '#525b69', boot: '#5a3420', bootS: '#3e2214', mus: '#4a3424', hairS: '#7a6a5c', straw: '#e8d36a', badge: '#f2c641', badgeS: '#c99a1e',
+  skB: '#e0a97c', skBs: '#c08860', hatB: '#2a2632', hatBs: '#17141c', hatBand: '#c9963a', red: '#c4322b', redS: '#99231f', fringe: '#f0d6a2', hairB: '#2a2220', scarf: '#e0b43c',
+  pantB: '#3a3546', pantBs: '#27232f', bootB: '#221d26', buckle: '#e0b43c',
+  skM: '#d9a074', skMs: '#b97f58', hair: '#16141a', hairHi: '#3a3442', navy: '#1f3c8f', navyS: '#152c6b', pipe: '#f1ead8',
+  lan: '#8fd3f4', lanP: '#f07aa8', chino: '#d8c6a6', chinoS: '#b9a685', shoe: '#26346a', sole: '#f4f0e6', soleR: '#d8333a', motif: '#7fc6f0', motif2: '#cdeefe',
   gun: '#8d96a3', gunS: '#5f6773', grip: '#6b3f22', leather: '#7a4a28', leatherS: '#5a3218',
   car: '#d6262e', carS: '#a81c23', carHi: '#ff6a6a', clad: '#2b2a33', glass: '#2c3e66', glassHi: '#6f86b8', rim: '#c9ced6', rimS: '#8e96a3', tire: '#1e1d24',
 };
+const LW = 4.5, FW = 3;   // body outline, face detail (screen px)
 
-// —— face parts ——
-export function eye(cx, cy, rx, ry, { lid = 0, look = [0, 0], pupil = 4.5, skin = PAL.skS, closed = false, lw = 6, jitter = 0, lower = 0 } = {}) {
-  if (closed) { stroke(arc(cx, cy + ry * .15, rx * .8, ry * .45, Math.PI * .1, Math.PI * .9, 14), lw); return; }
-  shape(ell(cx, cy, rx, ry, 36), {
-    fill: PAL.white, lw, shade: () => {
-      dot(cx + look[0] * rx * .55 + jitter, cy + look[1] * ry * .5, pupil);
-      if (lid > 0) {
-        const yl = cy - ry + lid * 2 * ry;
-        fillOnly([[cx - rx * 1.3, cy - ry * 1.4], [cx + rx * 1.3, cy - ry * 1.4], [cx + rx * 1.3, yl], [cx - rx * 1.3, yl + ry * .08]], skin, { boil: .5 });
-        stroke([[cx - rx * 1.2, yl + ry * .08], [cx + rx * 1.2, yl]], lw);
-      }
-      if (lower > 0) { const yb = cy + ry - lower * 2 * ry; fillOnly([[cx - rx * 1.3, yb], [cx + rx * 1.3, yb], [cx + rx * 1.3, cy + ry * 1.4], [cx - rx * 1.3, cy + ry * 1.4]], skin, { boil: .5 }); stroke([[cx - rx * 1.2, yb], [cx + rx * 1.2, yb]], lw * .8); }
-    }
-  });
+// —— two-bone IK ——
+function ik(a, target, L1, L2, side) {
+  let dx = target[0] - a[0], dy = target[1] - a[1], d = Math.hypot(dx, dy) || 1;
+  const dd = clamp(d, Math.abs(L1 - L2) + 1, (L1 + L2) * .995), base = Math.atan2(dy, dx);
+  const ang = Math.acos(clamp((L1 * L1 + dd * dd - L2 * L2) / (2 * L1 * dd), -1, 1));
+  const e = [a[0] + Math.cos(base + side * ang) * L1, a[1] + Math.sin(base + side * ang) * L1];
+  return [e, [a[0] + Math.cos(base) * dd, a[1] + Math.sin(base) * dd]];
 }
-export function mouth(cx, cy, mw, { o = 0, w = 1, sm = 0, skew = 0, lw = 6, teeth = true, tongue = true } = {}) {
-  const hw = mw * w / 2, k = mw * .22, lc = [cx - hw, cy - sm * k + skew * k], rc = [cx + hw, cy - sm * k - skew * k];
-  if (o < .07) { stroke(quad(lc, [cx, cy + sm * k * 1.2], rc, 12), lw); return; }
-  const h = o * mw * .62;
-  const up = quad(lc, [cx, cy - h * .25 + sm * k * .4], rc, 12), dn = quad(rc, [cx, cy + h + sm * k * .6], lc, 14);
-  shape([...up, ...dn], {
-    fill: PAL.mouthIn, lw, shade: () => {
-      if (teeth && o > .22) fillOnly(rect(cx - hw * 1.2, cy - h, hw * 2.4, h * .32 + 6), PAL.white, { boil: .3 });
-      if (tongue) fillOnly(ell(cx + hw * .15, cy + h * .95, hw * .6, h * .45, 20), PAL.tongue, { boil: .3 });
-    }
-  });
-}
-// gritted-teeth grin (bandit): a white bar with tooth lines, corners pulled
-function grit(cx, cy, mw, mh, lw = 6) {
-  shape(rr(cx - mw / 2, cy - mh / 2, mw, mh, mh * .45), { fill: PAL.white, lw, shade: () => { stroke([[cx - mw / 2, cy], [cx + mw / 2, cy]], 4); for (let i = 1; i < 6; i++) stroke([[cx - mw / 2 + i * mw / 6, cy - mh / 2], [cx - mw / 2 + i * mw / 6, cy + mh / 2]], 4); } });
-}
-export function hand(x, y, ang, r = 19, col = PAL.skS, { fist = false, lw = 6 } = {}) {
-  push(); translate(x, y); rotate(ang);
-  const pts = fist ? spline([[-r * .6, -r * .8], [r * .7, -r * .9], [r * 1.1, -r * .1], [r * .8, r * .8], [-r * .5, r * .9], [-r * .9, 0]])
-    : spline([[-r * .5, -r * .85], [r * .5, -r * 1.05], [r * 1.35, -r * .75], [r * 1.05, -r * .3], [r * 1.5, -r * .1], [r * 1.1, r * .3], [r * 1.35, r * .7], [r * .6, r * .95], [-r * .6, r * .8], [-r * .95, 0]]);
-  shape(pts, { fill: col, lw });
-  stroke([[r * .2, -r * .15], [r * .75, -r * .45]], lw * .6);
-  pop();
-}
-// thumbs up: a fist with the thumb pointing up (screen up, whatever the arm angle)
-export function thumbUp(x, y, r = 20, col = PAL.skM, lw = 6) {
+const seg2 = (a, b, w0, w1, fill, o = {}) => shape(noodle(a, b, 0, w0, w1), { fill, lw: LW, ...o });
+
+// —— hands (length L along the forearm direction) ——
+export function hand(x, y, ang, L = 58, col = PAL.skS, mode = 'open') {
   push(); translate(x, y);
-  shape(spline([[-r * .2, -r * .5], [r * .15, -r * 2.0], [r * .7, -r * 2.05], [r * .75, -r * .6]]), { fill: col, lw });
-  shape(spline([[-r * .9, -r * .55], [r * 1.0, -r * .7], [r * 1.15, r * .2], [r * .8, r * .95], [-r * .8, r * .95], [-r * 1.05, r * .2]]), { fill: col, lw });
-  for (const yy of [-.05, .4]) stroke([[-r * .7, r * yy], [r * .2, r * yy]], lw * .55);
+  if (mode === 'thumb') {   // thumbs up, screen-aligned
+    const k = L / 58;
+    shape(spline([[-6 * k, -6 * k], [-4 * k, -40 * k], [6 * k, -44 * k], [12 * k, -36 * k], [10 * k, -6 * k]]), { fill: col, lw: LW });
+    shape(spline([[-16 * k, -8 * k], [20 * k, -10 * k], [24 * k, 6 * k], [22 * k, 26 * k], [-14 * k, 26 * k], [-20 * k, 8 * k]]), { fill: col, lw: LW });
+    for (const yy of [2, 12]) stroke([[-12 * k, yy * k], [14 * k, yy * k]], FW);
+    pop(); return;
+  }
+  rotate(ang); const s = L;
+  if (mode === 'fist' || mode === 'grip') {
+    shape(spline([[0, -.2 * s], [.42 * s, -.25 * s], [.62 * s, -.12 * s], [.62 * s, .16 * s], [.42 * s, .26 * s], [0, .2 * s]]), { fill: col, lw: LW });
+    for (const yy of [-.08, .04, .14]) stroke([[.42 * s, yy * s], [.6 * s, yy * s]], FW);
+    stroke([[.1 * s, .1 * s], [.4 * s, .18 * s]], FW);
+  } else if (mode === 'point') {
+    shape(spline([[0, -.2 * s], [.5 * s, -.2 * s], [1.05 * s, -.14 * s], [1.08 * s, -.04 * s], [.6 * s, -.02 * s], [.6 * s, .16 * s], [.42 * s, .26 * s], [0, .2 * s]]), { fill: col, lw: LW });
+  } else {
+    shape(spline([[0, -.19 * s], [.55 * s, -.22 * s], [.98 * s, -.14 * s], [1.02 * s, .02 * s], [.95 * s, .14 * s], [.56 * s, .17 * s], [.5 * s, .3 * s], [.4 * s, .42 * s], [.3 * s, .36 * s], [.2 * s, .24 * s], [0, .2 * s]]), { fill: col, lw: LW });
+    for (const yy of [-.1, -.02, .06]) stroke([[.62 * s, yy * s], [.92 * s, yy * s]], FW * .8);
+  }
   pop();
 }
-export const sweat = (x, y, s = 1) => shape(spline([[x, y - 16 * s], [x + 9 * s, y + 4 * s], [x, y + 12 * s], [x - 9 * s, y + 4 * s]]), { fill: PAL.sweat, lw: 5 });
-const shadowBlob = (w = 110) => fillOnly(ell(0, 4, w, 16, 30), 'rgba(20,18,60,.35)', { boil: .3 });
+export const sweat = (x, y, s = 1) => shape(spline([[x, y - 11 * s], [x + 6 * s, y + 3 * s], [x, y + 8 * s], [x - 6 * s, y + 3 * s]]), { fill: PAL.sweat, lw: 3.5 });
+const shadowBlob = (w = 95) => fillOnly(ell(0, 4, w, 14, 30), 'rgba(20,18,60,.35)', { boil: .3 });
 
 // —— props ——
 export function revolver(x, y, a = 0, s = 1) {
   push(); translate(x, y); rotate(a); scale(s);
-  shape(rr(-6, -16, 92, 16, 5), { fill: PAL.gun, lw: 5, shade: () => fillOnly(rect(-10, -6, 110, 12), PAL.gunS, { boil: .3 }) });   // barrel
-  shape(rr(-10, -24, 40, 30, 10), { fill: PAL.gun, lw: 5, shade: () => fillOnly(rect(-12, -2, 50, 12), PAL.gunS, { boil: .3 }) });  // cylinder
-  shape(spline([[-12, -12], [-6, 6], [-26, 52], [-50, 48], [-34, 0]]), { fill: PAL.grip, lw: 5 });                                    // grip
-  stroke(arc(-2, 10, 12, 12, 0, Math.PI, 8), 4, { closed: false });
+  shape(rr(-4, -10, 66, 11, 4), { fill: PAL.gun, lw: LW, shade: () => fillOnly(rect(-8, -4, 80, 8), PAL.gunS, { boil: .3 }) });
+  shape(rr(-8, -16, 28, 21, 7), { fill: PAL.gun, lw: LW });
+  shape(spline([[-8, -8], [-4, 4], [-18, 36], [-34, 33], [-24, 0]]), { fill: PAL.grip, lw: LW });
   pop();
 }
-function holster(x, y, drawn, s = 1) {
-  push(); translate(x, y); scale(s);
-  shape(spline([[-20, -6], [22, -10], [26, 70], [6, 92], [-14, 72]]), { fill: PAL.leather, lw: 6, shade: () => fillOnly(rect(4, -20, 40, 120), PAL.leatherS, { boil: .3 }) });
-  if (!drawn) shape(spline([[-10, -4], [-4, -40], [-26, -62], [-36, -46], [-18, -6]]), { fill: PAL.grip, lw: 5 });
+function holster(x, y, drawn) {
+  push(); translate(x, y);
+  shape(spline([[-14, -4], [16, -8], [20, 56], [6, 72], [-10, 56]]), { fill: PAL.leather, lw: LW, shade: () => fillOnly(rect(4, -16, 30, 100), PAL.leatherS, { boil: .3 }) });
+  if (!drawn) shape(spline([[-8, -2], [-4, -30], [-20, -46], [-28, -34], [-14, -4]]), { fill: PAL.grip, lw: LW });
   pop();
 }
 
-// —— shared body parts ——
-function legs(P, hipY, pant, pantS, shoeFn, w = 26) {
+// —— the body rig ——
+// C: costume {skin, skinS, top, topS, sleeve:'short'|'long', sleeveCol, pant, pantS, shoe:'boot'|'sneaker', bootCol, bootS, hemY, coat?}
+const SH = 72, SHY = -486, HIPY = -300, L_UA = 106, L_FA = 94, L_TH = 142, L_SH = 134;
+function rig(P, C, extras) {
+  const f = P.face ?? 1;
+  push(); translate(P.x, (P.y || 0) + (P.bob || 0)); if (P.shadow !== false) shadowBlob(90 * (P.s ?? 1));
+  scale((P.s ?? 1) * f, (P.s ?? 1) * (P.sq ?? 1));
+  // legs
   const lg = [P.legL || [0, 0], P.legR || [0, 0]];
   [-1, 1].forEach((sx, i) => {
-    const hip = [sx * 28, hipY], ank = [sx * 32 + lg[i][0], -22 + lg[i][1]];
-    shape(noodle(hip, ank, sx * -4, w, w * .85), { fill: pant, lw: 6, shade: () => fillOnly(rect(sx * 28 + 4, hipY - 10, 30, 400), pantS, { boil: .3 }) });
-    shoeFn(ank);
+    const hip = [sx * 30, HIPY], ank = [sx * 30 + lg[i][0] + 4, -26 + lg[i][1]];
+    const [knee, a2] = ik(hip, ank, L_TH, L_SH, sx > 0 ? -1 : 1);
+    seg2(hip, knee, 52, 40, C.pant, { shade: () => fillOnly(rect(sx * 30 + 6, -400, 40, 420), C.pantS, { boil: .3 }) });
+    seg2(knee, a2, 40, 30, C.pant, { shade: () => fillOnly(rect(sx * 30 + 6, -400, 40, 420), C.pantS, { boil: .3 }) });
+    shoe(a2, C);
   });
+  push(); rotate(P.lean ?? 0);
+  const aL = P.armL || { h: [-10, 192] }, aR = P.armR || { h: [10, 192] };
+  arm([-SH + 8, SHY + 8], aL, C, -1, P);
+  extras.back && extras.back();
+  // torso
+  const hem = C.hemY ?? -270;
+  shape(spline([[-18, -512], [-62, -500], [-SH - 4, -478], [-70, -430], [-58, -372], [-62, hem], [0, hem + 6], [62, hem], [58, -372], [70, -430], [SH + 4, -478], [62, -500], [18, -512]]), {
+    fill: C.top, lw: LW, shade: () => { fillOnly(spline([[30, -520], [90, -490], [90, hem + 20], [40, hem + 20], [52, -400]]), C.topS, { boil: .4 }); extras.torso && extras.torso(hem); }
+  });
+  extras.front && extras.front(hem);
+  // neck + head
+  shape([[-13, -534], [13, -534], [17, -494], [-17, -494]], { fill: C.skin, lw: LW, shade: () => fillOnly(rect(-24, -536, 48, 9), C.skinS, { boil: .3 }) });
+  extras.collar && extras.collar();
+  push(); translate(4, -568); rotate(P.headTilt ?? 0); extras.head(P); pop();
+  arm([SH - 8, SHY + 8], aR, C, 1, P);
+  pop();
+  extras.after && extras.after();
+  pop();
 }
-const boot = (col, colS) => ank => shape(spline([[ank[0] - 22, ank[1] + 22], [ank[0] - 18, ank[1] - 14], [ank[0] + 12, ank[1] - 12], [ank[0] + 16, ank[1] + 2], [ank[0] + 44, ank[1] + 10], [ank[0] + 44, ank[1] + 24]]), { fill: col, lw: 6, shade: () => fillOnly(rect(ank[0] - 40, ank[1] + 14, 100, 20), colS, { boil: .3 }) });
-const sneaker = ank => shape(spline([[ank[0] - 22, ank[1] + 20], [ank[0] - 20, ank[1] - 8], [ank[0] + 8, ank[1] - 8], [ank[0] + 44, ank[1] + 6], [ank[0] + 46, ank[1] + 22]]), {
-  fill: PAL.shoe, lw: 6, shade: () => { fillOnly(rect(ank[0] - 40, ank[1] + 12, 100, 20), PAL.sole, { boil: .3 }); fillOnly(rect(ank[0] - 40, ank[1] + 12, 100, 4), PAL.soleR, { boil: .2 }); }
-});
-function arm(sh, h, bend, sleeve, skin, { w = 20, sleeveTo = 1, pipe = null, end = 'hand', fist = false } = {}) {
-  const hp = [sh[0] + h[0], sh[1] + h[1]], ang = Math.atan2(h[1], h[0]);
-  if (sleeveTo < 1) {
-    const el = [sh[0] + h[0] * sleeveTo, sh[1] + h[1] * sleeveTo];
-    shape(noodle(sh, hp, bend, w * .8, w * .7), { fill: skin, lw: 6 });
-    shape(noodle(sh, el, bend * sleeveTo, w * 1.6, w * 1.5), { fill: sleeve, lw: 6 });
-    if (pipe) { const nx = -Math.sin(ang), ny = Math.cos(ang); stroke([[el[0] + nx * w * .75, el[1] + ny * w * .75], [el[0] - nx * w * .75, el[1] - ny * w * .75]], 5, { line: pipe }); }
-  } else shape(noodle(sh, hp, bend, w * 1.25, w * 1.1), { fill: sleeve, lw: 6 });
-  if (end === 'hand') hand(hp[0], hp[1], ang, 18, skin, { fist });
-  else if (end === 'thumb') thumbUp(hp[0], hp[1] - 4, 19, skin);
-  else if (end === 'gun') { hand(hp[0], hp[1], ang, 18, skin, { fist: true }); revolver(hp[0] + 6, hp[1] - 6, ang - .1, .85); }
-  return hp;
+function arm(sh, A, C, side, P) {
+  const tgt = [sh[0] + A.h[0], sh[1] + A.h[1]];
+  const [el, hp] = ik(sh, tgt, L_UA, L_FA, (A.bend ?? (side > 0 ? 1 : -1)) >= 0 ? -1 : 1);
+  const ang = Math.atan2(hp[1] - el[1], hp[0] - el[0]);
+  const long = C.sleeve === 'long', sc = C.sleeveCol || C.top;
+  seg2(sh, el, 32, 26, long ? sc : C.skin);
+  seg2(el, hp, 26, 20, long ? sc : C.skin);
+  if (!long) { const m = [lerp(sh[0], el[0], .5), lerp(sh[1], el[1], .5)]; seg2(sh, m, 40, 38, sc); const nx = -(m[1] - sh[1]), ny = m[0] - sh[0], l = Math.hypot(nx, ny) || 1; if (C.pipe) stroke([[m[0] + nx / l * 18, m[1] + ny / l * 18], [m[0] - nx / l * 18, m[1] - ny / l * 18]], 4, { line: C.pipe }); }
+  else { const c = [hp[0] - Math.cos(ang) * 6, hp[1] - Math.sin(ang) * 6]; fillOnly(ell(c[0], c[1], 13, 13, 12), C.cuff || sc, { boil: .3 }); }
+  const mode = A.end || (A.fist ? 'fist' : 'open');
+  if (mode === "gun") { hand(hp[0], hp[1], ang, 48, C.skin, 'grip'); revolver(hp[0] + Math.cos(ang) * 22, hp[1] + Math.sin(ang) * 22 - 6, ang - Math.PI / 2 + .2, .8); }
+  else hand(hp[0], hp[1], ang, 48, C.skin, mode);
+}
+function shoe(a, C) {
+  const [x, y] = a;
+  if (C.shoe === 'sneaker') shape(spline([[x - 22, y + 22], [x - 20, y - 4], [x + 6, y - 6], [x + 40, y + 6], [x + 48, y + 24]]), {
+    fill: PAL.shoe, lw: LW, shade: () => { fillOnly(rect(x - 40, y + 14, 110, 20), PAL.sole, { boil: .3 }); fillOnly(rect(x - 40, y + 14, 110, 4), PAL.soleR, { boil: .2 }); }
+  });
+  else shape(spline([[x - 20, y + 24], [x - 18, y - 22], [x + 12, y - 22], [x + 14, y], [x + 46, y + 8], [x + 48, y + 26]]), { fill: C.bootCol, lw: LW, shade: () => fillOnly(rect(x - 40, y + 16, 110, 20), C.bootS, { boil: .3 }) });
+}
+
+// —— faces (head units: 100 wide, drawn at 0.62) ——
+const HS = .62;
+function face(P, o) {
+  const tu = P.turn ?? .55, ox = tu * 9, detail = zoom() > .75;
+  // back ear
+  shape(ell(-44 + ox * .2, 4, 8, 14, 14), { fill: o.skin, lw: FW + .5, shade: () => fillOnly(ell(-42, 6, 4, 8, 10), o.skinS, { boil: .3 }) });
+  if (tu < .3) shape(ell(48, 4, 8, 14, 14), { fill: o.skin, lw: FW + .5 });
+  // head + jaw
+  shape(spline([[-46, -22], [-42, -54], [-18, -68], [14, -68], [40, -54], [50, -20], [50 + ox * .2, 12], [42 + ox * .4, 40], [24 + ox * .6, 60], [6 + ox * .6, 68], [-14, 64], [-34, 48], [-46, 20]]), {
+    fill: o.skin, lw: LW, shade: () => { fillOnly(spline([[-60, -10], [-40, 40], [-10, 76], [-60, 80]]), o.skinS, { boil: .3 }); o.stubble && fillOnly(spline([[-40, 30], [0, 44], [48, 30], [40, 60], [6, 74], [-30, 56]]), o.stubble, { boil: .3 }); }
+  });
+  o.hairBack && o.hairBack(ox);
+  const lk = P.look || [0, 0], es = P.eyeS ?? 1, lid = P.blink ? 1 : clamp(P.lid ?? .25, 0, 1);
+  const eyes = [[-17 + ox, -4, 1 - tu * .18], [20 + ox * 1.2, -4, 1]];
+  // brows
+  const br = P.brow ?? 0, bi = P.browIn ?? 0;
+  for (const [ex, ey, k] of eyes) {
+    const inner = ex < ox ? 1 : -1;   // which end is toward the nose
+    const yi = ey - 16 - br * 4 + bi * 4, yo = ey - 17 - br * 2 - bi * 1;
+    shape([[ex - 11 * k, inner > 0 ? yo : yi], [ex + 11 * k, inner > 0 ? yi : yo], [ex + 11 * k, (inner > 0 ? yi : yo) + 4], [ex - 11 * k, (inner > 0 ? yo : yi) + 4]], { fill: o.brow, lw: FW * .7, line: o.brow });
+  }
+  // eyes
+  for (const [ex, ey, k] of eyes) {
+    const w = 10 * k, h = 5.5 * es;
+    if (!detail) { if (lid < .8) dot(ex + lk[0] * 2, ey, 3.2, INK); else stroke([[ex - w, ey], [ex + w, ey]], FW); continue; }
+    if (P.happy) { stroke(arc(ex, ey + 3, w, 6, Math.PI * 1.1, Math.PI * 1.9, 10), FW + .5); continue; }
+    const E = [...arc(ex, ey, w, h * 1.2, Math.PI, TAU, 12), ...arc(ex, ey, w, h * .8, 0, Math.PI, 12).slice(1, -1)];
+    shape(E, {
+      fill: PAL.white, lw: FW, shade: () => {
+        const ir = (P.pupil ? 3.6 : 5) * (es > 1.15 ? .8 : 1), px = ex + lk[0] * w * .45 + (P.jitter || 0), py = ey + lk[1] * h * .4;
+        fillOnly(ell(px, py, ir, ir, 14), o.iris || PAL.iris, { boil: .2 }); dot(px, py, ir * .45, '#120d0c'); dot(px + ir * .35, py - ir * .35, ir * .25, '#ffffff');
+        if (lid > 0) { const yl = ey - h * 1.2 + lid * h * 2.2; fillOnly([[ex - w - 4, ey - h * 2], [ex + w + 4, ey - h * 2], [ex + w + 4, yl], [ex - w - 4, yl]], o.skin, { boil: .3 }); stroke([[ex - w - 2, yl], [ex + w + 2, yl]], FW); }
+      }
+    });
+    stroke(arc(ex, ey - .5, w + 1, h * 1.3, Math.PI * 1.05, Math.PI * 1.95, 10), FW + 1);   // upper lash line
+  }
+  if (o.bags) for (const [ex, ey, k] of eyes) stroke(arc(ex, ey + 6, 9 * k, 4, Math.PI * .2, Math.PI * .8, 6), FW * .7, { line: o.skinS });
+  // nose
+  stroke(spline([[ox + 4, -2], [ox + 7, 16], [ox + 11, 24]], false), FW);
+  stroke(spline([[ox - 4, 25], [ox + 3, 28], [ox + 11, 24]], false), FW);
+  // mouth
+  const m = P.mouth || {}, mo = clamp(m.o || 0, 0, 1), mw = 13 * (m.w ?? 1), sm = m.sm ?? .2, mx = ox + 3, my = 42;
+  if (P.grit) {
+    shape(rr(mx - 15, my - 6, 30, 12, 5), { fill: PAL.teeth, lw: FW, shade: () => { stroke([[mx - 15, my], [mx + 15, my]], 2); for (let i = 1; i < 5; i++) stroke([[mx - 15 + i * 6, my - 6], [mx - 15 + i * 6, my + 6]], 2); } });
+  } else if (mo < .08) {
+    stroke(quad([mx - mw, my - sm * 3], [mx, my + sm * 4], [mx + mw, my - sm * 3], 10), FW + .5);
+    if (detail) stroke(arc(mx, my + 7, mw * .55, 3, Math.PI * .15, Math.PI * .85, 6), FW * .7, { line: o.skinS });
+  } else {
+    const h = mo * 15;
+    shape([...quad([mx - mw, my - sm * 2], [mx, my - 3], [mx + mw, my - sm * 2], 10), ...quad([mx + mw, my - sm * 2], [mx, my + h], [mx - mw, my - sm * 2], 10)], {
+      fill: PAL.mouthIn, lw: FW, shade: () => { if (mo > .25) fillOnly(rect(mx - mw, my - 6, mw * 2, 5), PAL.teeth, { boil: .2 }); fillOnly(ell(mx, my + h * .9, mw * .55, h * .4, 12), PAL.tongue, { boil: .2 }); }
+    });
+  }
+  o.front && o.front(ox, mx, my);
 }
 
 // —— SHERIFF ——
-// P: {x,y,s,face,sq,bob,lean, lid,look,brow,mouth:{o,w},blink, straw, armR:{h,bend}, armL, gun:0|1 (drawn), hatTip}
-export function sheriff(P) {
-  const f = P.face ?? 1;
-  push(); translate(P.x, (P.y || 0) + (P.bob || 0)); if (P.shadow !== false) shadowBlob(100);
-  scale((P.s ?? 1) * f, (P.s ?? 1) * (P.sq ?? 1));
-  legs(P, -196, PAL.pantS, PAL.pantSs, boot(PAL.boot, PAL.bootS), 26);
-  push(); rotate(P.lean ?? 0);
-  const shB = [-56, -352], shF = [52, -350];
-  arm(shB, (P.armL || { h: [-18, 150] }).h, (P.armL || {}).bend ?? -10, PAL.coat, PAL.skS, { w: 19 });
-  // coat
-  shape(spline([[-40, -378], [-82, -350], [-92, -250], [-98, -150], [-20, -140], [10, -190], [40, -140], [96, -150], [86, -260], [74, -352], [40, -378]]), {
-    fill: PAL.coat, lw: 7, shade: () => {
-      fillOnly(spline([[-130, -390], [-50, -370], [-70, -250], [-66, -120], [-140, -120]]), PAL.coatS, { boil: .4 });
-      fillOnly([[-22, -378], [36, -378], [14, -196], [2, -196]], PAL.shirtS, { boil: .4 });
+const C_SH = { skin: PAL.skS, skinS: PAL.skSs, top: PAL.coat, topS: PAL.coatS, sleeve: 'long', pant: PAL.pantS, pantS: PAL.pantSs, shoe: 'boot', bootCol: PAL.boot, bootS: PAL.bootS, hemY: -232 };
+export function sheriffHead(P) {
+  push(); scale(HS);
+  face({ turn: .55, lid: .45, ...P }, {
+    skin: PAL.skS, skinS: PAL.skSs, brow: '#5a4636', stubble: 'rgba(120,90,70,.25)', bags: true,
+    hairBack: () => fillOnly(spline([[-48, -40], [-50, 0], [-42, 10], [-40, -30]]), PAL.hairS, { boil: .3 }),
+    front: (ox, mx, my) => {
+      const sa = P.straw ?? 0;   // straw from the mouth corner
+      push(); translate(mx + 11, my + 1); rotate(-.25 + sa); stroke([[0, 0], [58, -4]], 5); stroke([[0, 0], [58, -4]], 2.5, { line: PAL.straw }); stroke([[52, -4], [64, -12]], 2.5, { line: PAL.straw }); stroke([[52, -4], [66, 0]], 2.5, { line: PAL.straw }); pop();
+      shape(spline([[mx - 22, my - 4], [mx - 10, my - 13], [mx + 3, my - 10], [mx + 16, my - 13], [mx + 26, my - 4], [mx + 28, my + 12], [mx + 20, my + 4], [mx + 3, my - 1], [mx - 14, my + 4], [mx - 24, my + 12]]), { fill: PAL.mus, lw: FW });
     }
   });
-  stroke([[-22, -378], [2, -196]], 6); stroke([[36, -378], [14, -196]], 6);
-  stroke(spline([[-34, -376], [-14, -330], [-6, -290]], false), 5);
-  stroke(spline([[44, -376], [26, -330], [20, -290]], false), 5);
-  // belt + holster
-  shape(rr(-96, -206, 192, 22, 6), { fill: PAL.band, lw: 6 });
-  shape(rr(-14, -208, 26, 26, 5), { fill: PAL.badge, lw: 5 });
-  holster(80, -190, P.gun, 1);
-  // star badge
-  push(); translate(-48, -300); rotate(.1);
-  const st = []; for (let i = 0; i < 10; i++) { const r_ = i % 2 ? 11 : 26, a = -Math.PI / 2 + i / 10 * TAU; st.push([Math.cos(a) * r_, Math.sin(a) * r_]); }
-  shape(st, { fill: PAL.badge, lw: 5, shade: () => fillOnly(rect(0, -30, 30, 60), PAL.badgeS, { boil: .3 }) });
-  pop();
-  shape(noodle([10, -372], [16, -400], 3, 32, 32), { fill: PAL.skS, lw: 6 });
-  push(); translate(18, -480); rotate(P.headTilt ?? 0); sheriffHead(P); pop();
-  const armF = P.armR || { h: [30, 140], bend: 16 };
-  arm(shF, armF.h, armF.bend ?? 16, PAL.coat, PAL.skS, { w: 19, end: P.gun ? 'gun' : 'hand', fist: armF.fist });
-  pop(); pop();
-}
-export function sheriffHead(P) {
-  shape(ell(-74, 8, 15, 24, 18), { fill: PAL.skS, lw: 6, shade: () => fillOnly(ell(-70, 10, 6, 12, 12), PAL.skSs, { boil: .3 }) });
-  shape(spline([[-6, -104], [58, -94], [90, -40], [92, 30], [70, 90], [10, 108], [-50, 92], [-82, 40], [-86, -30], [-60, -90]]), { fill: PAL.skS, lw: 7, shade: () => fillOnly(spline([[-100, 10], [-60, 70], [10, 120], [-90, 130]]), PAL.skSs, { boil: .3 }) });
-  const lid = P.blink ? 1 : clamp(P.lid ?? .48, 0, 1), look = P.look || [0, 0];
-  eye(8, -14, 30, 33, { lid, look, pupil: 4.5, skin: PAL.skS });
-  eye(58, -16, 23, 29, { lid, look, pupil: 4, skin: PAL.skS });
-  const br = P.brow ?? 0;
-  stroke([[-22, -54 - br * 8 + (P.browIn ?? 0) * 0], [34, -50 + br * 4 + (P.browIn ?? 0) * 10]], 9);
-  stroke([[44, -52 + (P.browIn ?? 0) * 10], [84, -58 - br * 8]], 8);
-  // nose
-  shape(spline([[36, -6], [50, 16], [76, 30], [70, 48], [42, 46], [30, 30]]), { fill: PAL.skS, lw: 6, shade: () => fillOnly(ell(64, 42, 14, 8, 12), PAL.skSs, { boil: .3 }) });
-  // mouth (under the moustache)
-  const m = P.mouth || {};
-  mouth(44, 78, 50, { o: (m.o || 0) * .8, w: m.w ?? 1, sm: m.sm ?? -.2, lw: 6, teeth: false });
-  // straw
-  const sa = P.straw ?? 0;
-  push(); translate(70, 76); rotate(-.35 + sa);
-  stroke([[0, 0], [86, -6]], 6, { line: INK }); stroke([[0, 0], [86, -6]], 3, { line: PAL.straw, boil: .3 });
-  stroke([[80, -6], [98, -18]], 4, { line: PAL.straw }); stroke([[80, -6], [100, 0]], 4, { line: PAL.straw });
-  pop();
-  // moustache
-  shape(spline([[4, 70], [20, 48], [46, 54], [74, 46], [96, 66], [104, 96], [86, 82], [70, 70], [46, 72], [22, 72], [6, 92], [-6, 86]]), { fill: PAL.mus, lw: 6 });
-  // hat: brim then crown
+  // hat
   const tip = P.hatTip ?? 0;
-  push(); translate(4, -92); rotate(-.06 + tip);
-  shape(spline([[-170, 6], [-120, -14], [0, -22], [120, -16], [176, 0], [150, 22], [0, 26], [-150, 22]]), { fill: PAL.hatS, lw: 7, shade: () => fillOnly(rect(-200, 8, 400, 30), PAL.hatSs, { boil: .3 }) });
-  shape(spline([[-86, -6], [-84, -70], [-50, -100], [-10, -84], [30, -100], [72, -76], [86, -6]]), { fill: PAL.hatS, lw: 7, shade: () => { fillOnly(rect(30, -110, 80, 120), PAL.hatSs, { boil: .3 }); fillOnly(rect(-100, -32, 200, 24), PAL.band, { boil: .3 }); } });
-  stroke(quad([-10, -84], [-6, -60], [-14, -40], 8), 5);
+  push(); translate(2, -46); rotate(-.05 + tip);
+  shape(spline([[-118, 6], [-80, -8], [0, -12], [80, -8], [122, 2], [100, 14], [0, 18], [-100, 14]]), { fill: PAL.hatS, lw: LW, shade: () => fillOnly(rect(-140, 6, 280, 20), PAL.hatSs, { boil: .3 }) });
+  shape(spline([[-60, -4], [-58, -54], [-32, -76], [-4, -66], [26, -76], [52, -56], [60, -4]]), { fill: PAL.hatS, lw: LW, shade: () => { fillOnly(rect(20, -90, 60, 100), PAL.hatSs, { boil: .3 }); fillOnly(rect(-70, -22, 140, 16), PAL.band, { boil: .3 }); } });
+  stroke(quad([-4, -66], [-2, -48], [-8, -32], 8), FW);
   pop();
+  pop();
+}
+export function sheriff(P) {
+  rig(P, C_SH, {
+    torso: hem => {
+      fillOnly([[-20, -520], [24, -520], [16, hem], [-12, hem]], PAL.shirtS, { boil: .3 });   // shirt between the open coat
+      fillOnly([[-14, -505], [18, -505], [12, -440], [-8, -440]], PAL.shirtSs, { boil: .3 });
+      stroke([[-20, -512], [-12, hem]], LW); stroke([[24, -512], [16, hem]], LW);
+      stroke(spline([[-26, -510], [-40, -460], [-22, -420]], false), FW + 1); stroke(spline([[30, -510], [44, -460], [24, -420]], false), FW + 1);
+    },
+    front: hem => {
+      shape(rr(-64, -322, 128, 16, 4), { fill: PAL.band, lw: LW }); shape(rr(-9, -324, 18, 20, 3), { fill: PAL.badge, lw: FW });
+      holster(66, -308, P.gun);
+      push(); translate(-38, -446); rotate(.1);
+      const st = []; for (let i = 0; i < 10; i++) { const r_ = i % 2 ? 7 : 16, a = -Math.PI / 2 + i / 10 * TAU; st.push([Math.cos(a) * r_, Math.sin(a) * r_]); }
+      shape(st, { fill: PAL.badge, lw: FW, shade: () => fillOnly(rect(0, -20, 20, 40), PAL.badgeS, { boil: .3 }) }); pop();
+    },
+    head: sheriffHead,
+  });
 }
 
 // —— BANDIT ——
-// P: {x,y,s,face,sq,bob,nerv,t, look,eyeS,pupil,brow,mouth:{o,w},grin(0..1),blink, sweat, armR, armL, gun}
-export function bandit(P) {
-  const f = P.face ?? 1, ner = P.nerv ?? 0;
-  const jit = ner ? (hash(Math.floor((P.t || 0) * 12) * 3.3) - .5) * 7 * ner : 0;
-  push(); translate(P.x + jit, (P.y || 0) + (P.bob || 0)); if (P.shadow !== false) shadowBlob(90);
-  scale((P.s ?? 1) * f, (P.s ?? 1) * (P.sq ?? 1));
-  legs(P, -190, PAL.pantB, PAL.pantBs, boot(PAL.bootB, '#000000'), 22);
-  push(); rotate(P.lean ?? 0);
-  const shB = [-50, -330], shF = [48, -330];
-  arm(shB, (P.armL || { h: [-20, 140] }).h, (P.armL || {}).bend ?? -12, PAL.red, PAL.skB, { w: 17 });
-  shape(spline([[-36, -352], [-70, -330], [-80, -250], [-74, -186], [0, -176], [74, -186], [80, -250], [70, -330], [36, -352]]), {
-    fill: PAL.red, lw: 7, shade: () => {
-      fillOnly(spline([[20, -360], [90, -330], [100, -250], [90, -170], [40, -170], [56, -250]]), PAL.redS, { boil: .4 });
-      // fringe yoke
-      fillOnly(spline([[-90, -300], [0, -282], [90, -300], [90, -284], [0, -266], [-90, -284]]), PAL.fringe, { boil: .3 });
-      for (let i = 0; i < 11; i++) { const x = -70 + i * 14, y = -280 + Math.abs(x) * .12 - 6; stroke([[x, y], [x + 1, y + 20]], 4, { line: PAL.fringe }); }
-    }
+const C_BA = { skin: PAL.skB, skinS: PAL.skBs, top: PAL.red, topS: PAL.redS, sleeve: 'long', pant: PAL.pantB, pantS: PAL.pantBs, shoe: 'boot', bootCol: PAL.bootB, bootS: '#000000', hemY: -300 };
+export function banditHead(P) {
+  push(); scale(HS);
+  face({ turn: .5, lid: 0, ...P, grit: P.grin && !((P.mouth || {}).o > .08) }, {
+    skin: PAL.skB, skinS: PAL.skBs, brow: PAL.hairB, stubble: 'rgba(60,40,30,.28)',
+    hairBack: () => { fillOnly(spline([[-50, -36], [-54, 4], [-44, 16], [-40, -20]]), PAL.hairB, { boil: .3 }); fillOnly(spline([[50, -36], [54, 0], [46, 6], [44, -24]]), PAL.hairB, { boil: .3 }); },
   });
-  stroke([[0, -350], [0, -196]], 4);
-  for (let i = 0; i < 3; i++) dot(-8, -244 + i * 22, 4.5, PAL.fringe);
-  shape([[-24, -356], [-2, -338], [-14, -322], [-34, -340]], { fill: PAL.red, lw: 5 });
-  shape([[24, -356], [2, -338], [14, -322], [34, -340]], { fill: PAL.red, lw: 5 });
-  shape(rr(-80, -198, 160, 22, 6), { fill: '#3b2416', lw: 6 });
-  shape(ell(0, -187, 20, 15, 18), { fill: PAL.buckle, lw: 5, shade: () => dot(0, -187, 5, '#a8801e') });
-  holster(70, -178, P.gun, .95);
-  shape(noodle([4, -350], [8, -378], 2, 28, 28), { fill: PAL.skB, lw: 6 });
-  push(); translate(8, -452); rotate(P.headTilt ?? 0); banditHead(P, ner); pop();
-  const armF = P.armR || { h: [30, 130], bend: 14 };
-  arm(shF, armF.h, armF.bend ?? 14, PAL.red, PAL.skB, { w: 17, end: P.gun ? 'gun' : 'hand', fist: armF.fist });
+  push(); translate(0, -48); rotate(P.hatTilt ?? -.06);
+  shape(spline([[-92, 4], [-50, -6], [50, -6], [94, 2], [76, 12], [-76, 12]]), { fill: PAL.hatB, lw: LW });
+  shape(spline([[-52, -2], [-48, -48], [-18, -60], [18, -52], [50, -46], [52, -2]]), { fill: PAL.hatB, lw: LW, shade: () => { fillOnly(rect(16, -70, 50, 80), PAL.hatBs, { boil: .3 }); fillOnly(rect(-60, -18, 120, 12), PAL.hatBand, { boil: .3 }); } });
   pop();
-  if (P.sweat != null) { const u = P.sweat % 1; sweat(-70, -540 + u * 40, 1); sweat(96, -520 + ((u + .5) % 1) * 40, .8); }
+  if (P.sweat != null) { const u = P.sweat % 1; sweat(-46, -40 + u * 30, 1); sweat(52, -30 + ((u + .5) % 1) * 30, .8); }
   pop();
 }
-export function banditHead(P, ner = 0) {
-  for (const sx of [-1, 1]) shape(ell(sx * 84, 8, 14, 21, 16), { fill: PAL.skB, lw: 6 });
-  shape(ell(0, 0, 88, 86, 60), { fill: PAL.skB, lw: 7, shade: () => fillOnly(ell(50, 34, 56, 64, 30), PAL.skBs, { boil: .3 }) });
-  const br = P.brow ?? 1;
-  stroke([[-62, -40 + br * 2], [-24, -50 - br * 9]], 8); stroke([[62, -40 + br * 2], [24, -50 - br * 9]], 8);
-  const look = P.look || [0, 0], shake = ner ? (hash(Math.floor((P.t || 0) * 24) * 1.7) - .5) * 3 * ner : 0, es = P.eyeS ?? 1;
-  for (const ex of [-34, 34]) eye(ex, -6, 30 * es, 34 * es, { lid: P.blink ? 1 : (P.lid ?? 0), look, pupil: P.pupil ?? 3.4, skin: PAL.skB, jitter: shake });
-  shape(ell(4, 30, 9, 8, 12), { fill: PAL.skBs, lw: 5 });
-  const m = P.mouth || {};
-  if ((m.o || 0) > .08 || !P.grin) mouth(2, 60, 56, { o: m.o || 0, w: m.w ?? 1, sm: m.sm ?? -.4, lw: 6 });
-  else grit(2, 60, 70 * (.8 + P.grin * .2), 26);
-  // hat
-  push(); translate(0, -72); rotate(P.hatTilt ?? -.08);
-  shape(spline([[-120, 4], [-60, -8], [60, -8], [124, 2], [100, 16], [-100, 16]]), { fill: PAL.hatB, lw: 7 });
-  shape(spline([[-62, -2], [-58, -62], [-20, -78], [24, -66], [60, -58], [62, -2]]), { fill: PAL.hatB, lw: 7, shade: () => { fillOnly(rect(20, -90, 60, 100), PAL.hatBs, { boil: .3 }); fillOnly(rect(-80, -22, 160, 16), PAL.hatBand, { boil: .3 }); } });
-  pop();
+export function bandit(P) {
+  const ner = P.nerv ?? 0, jit = ner ? (hash(Math.floor((P.t || 0) * 12) * 3.3) - .5) * 6 * ner : 0;
+  const shake = ner ? (hash(Math.floor((P.t || 0) * 24) * 1.7) - .5) * 1.5 * ner : 0;
+  rig({ ...P, x: P.x + jit, s: (P.s ?? 1) * .97, jitter: shake }, C_BA, {
+    torso: hem => {
+      fillOnly(spline([[-80, -470], [0, -452], [80, -470], [80, -456], [0, -438], [-80, -456]]), PAL.fringe, { boil: .3 });
+      for (let i = 0; i < 13; i++) { const x = -60 + i * 10, y = -450 + Math.abs(x) * .2; stroke([[x, y], [x + 1, y + 16]], 2.5, { line: PAL.fringe }); }
+      stroke([[2, -508], [2, hem]], FW); for (let i = 0; i < 4; i++) dot(-6, -420 + i * 30, 3, PAL.fringe);
+    },
+    collar: () => shape(spline([[-20, -516], [20, -516], [12, -496], [0, -486], [-12, -496]]), { fill: PAL.scarf, lw: FW }),
+    front: hem => { shape(rr(-62, -312, 124, 16, 4), { fill: '#3b2416', lw: LW }); shape(ell(0, -304, 12, 10, 14), { fill: PAL.buckle, lw: FW }); holster(60, -296, P.gun); },
+    head: banditHead,
+  });
 }
 
 // —— MAS SALES (the user) ——
-// P: {x,y,s,face,sq,bob,lean, turn(-1..1 3/4 → front), lid,look,brow,mouth:{o,w,sm},blink, armR:{h,bend,end}, armL, stretch}
-export function sales(P) {
-  const f = P.face ?? 1;
-  push(); translate(P.x, (P.y || 0) + (P.bob || 0)); if (P.shadow !== false) shadowBlob(100);
-  scale((P.s ?? 1) * f, (P.s ?? 1) * (P.sq ?? 1));
-  legs(P, -196, PAL.chino, PAL.chinoS, sneaker, 30);
-  push(); rotate(P.lean ?? 0);
-  const shB = [-60, -350], shF = [58, -350];
-  const aL = P.armL || { h: [-16, 146], bend: -10 };
-  arm(shB, aL.h, aL.bend ?? -10, PAL.navy, PAL.skM, { w: 19, sleeveTo: .36, pipe: PAL.pipe, end: aL.end || 'hand', fist: aL.fist });
-  // shirt (untucked), side motif panel
-  shape(spline([[-40, -376], [-78, -352], [-82, -260], [-78, -182], [0, -174], [78, -182], [82, -260], [78, -352], [40, -376]]), {
-    fill: PAL.navy, lw: 7, shade: () => {
-      fillOnly(spline([[30, -390], [100, -350], [110, -250], [100, -160], [50, -160], [62, -260]]), PAL.navyS, { boil: .4 });
-      fillOnly([[58, -236], [90, -250], [90, -160], [62, -160], [74, -196]], PAL.motif, { boil: .3 });
-      fillOnly([[72, -216], [90, -226], [90, -176], [80, -176]], PAL.motif2, { boil: .3 });
-      fillOnly([[-96, -220], [-72, -200], [-66, -160], [-96, -160]], PAL.motif, { boil: .3 });
-    }
-  });
-  stroke([[4, -372], [4, -176]], 4, { line: '#0f2150' });
-  for (let i = 0; i < 4; i++) dot(-4, -320 + i * 36, 3.5, '#e8e4ff');
-  // collar
-  shape([[-30, -382], [-2, -360], [-20, -334], [-44, -360]], { fill: PAL.navy, lw: 5 });
-  shape([[30, -382], [2, -360], [20, -334], [44, -360]], { fill: PAL.navy, lw: 5 });
-  // chest print
-  text('DAIHATSU', 58, -326, { font: '800 15px "Baloo 2"', fill: '#f4f1ea' });
-  // pocket
-  shape(rr(-70, -316, 40, 44, 4), { lw: 4, line: '#0f2150' });
-  // lanyard + ID card
-  stroke([[-24, -366], [-14, -280], [-2, -246]], 8, { line: INK }); stroke([[-24, -366], [-14, -280], [-2, -246]], 5, { line: PAL.lan, boil: .3 });
-  stroke([[24, -366], [12, -280], [2, -246]], 8, { line: INK }); stroke([[24, -366], [12, -280], [2, -246]], 5, { line: PAL.lan, boil: .3 });
-  dot(-16, -300, 3.5, PAL.lanP); dot(14, -312, 3.5, PAL.lanP);
-  shape(rr(-18, -246, 36, 48, 4), { fill: '#ffffff', lw: 5, shade: () => { fillOnly(rect(-12, -238, 24, 14), '#8fb4e8', { boil: .2 }); fillOnly(rect(-12, -218, 24, 4), '#c9c9d6', { boil: .2 }); } });
-  shape(noodle([6, -374], [8, -400], 2, 32, 32), { fill: PAL.skM, lw: 6 });
-  push(); translate(8, -482); rotate(P.headTilt ?? 0); salesHead(P); pop();
-  const aR = P.armR || { h: [24, 146], bend: 12 };
-  arm(shF, aR.h, aR.bend ?? 12, PAL.navy, PAL.skM, { w: 19, sleeveTo: .36, pipe: PAL.pipe, end: aR.end || 'hand', fist: aR.fist });
-  pop(); pop();
-}
+const C_SA = { skin: PAL.skM, skinS: PAL.skMs, top: PAL.navy, topS: PAL.navyS, sleeve: 'short', pipe: PAL.pipe, pant: PAL.chino, pantS: PAL.chinoS, shoe: 'sneaker', hemY: -262 };
 export function salesHead(P) {
-  const tu = P.turn ?? .4, ox = tu * 26;   // feature shift: 0 = front, 1 = 3/4
-  shape(ell(-78 + ox * .3, 8, 14, 22, 16), { fill: PAL.skM, lw: 6, shade: () => fillOnly(ell(-74, 10, 6, 11, 10), PAL.skMs, { boil: .3 }) });
-  if (tu < .5) shape(ell(80 + ox * .3, 8, 14, 22, 16), { fill: PAL.skM, lw: 6 });
-  shape(spline([[0, -100], [56, -90], [84, -40], [84, 30], [62, 82], [14, 104], [-36, 92], [-70, 46], [-82, -20], [-62, -82]]), { fill: PAL.skM, lw: 7, shade: () => fillOnly(spline([[-100, 0], [-66, 64], [10, 120], [-90, 120]]), PAL.skMs, { boil: .3 }) });
-  // hair: full black top, side part on the left, fringe sweeping right
-  shape(spline([[-84, -8], [-90, -60], [-62, -112], [-6, -132], [52, -124], [92, -88], [96, -40], [84, -20], [74, -56], [40, -72], [0, -70], [-30, -62], [-56, -66], [-70, -30]]), {
-    fill: PAL.hair, lw: 7, shade: () => { fillOnly(spline([[-40, -120], [10, -128], [60, -110], [20, -100], [-20, -104]]), PAL.hairS, { boil: .3 }); }
+  push(); scale(HS);
+  face({ turn: .3, lid: .12, ...P, mouth: { sm: .6, ...(P.mouth || {}) } }, {
+    skin: PAL.skM, skinS: PAL.skMs, brow: PAL.hair,
+    hairBack: () => {
+      // short black hair, side part on his right, volume swept to the left; short sides
+      shape(spline([[-50, -12], [-54, -42], [-40, -72], [-6, -86], [30, -82], [52, -62], [56, -30], [50, -10], [44, -34], [26, -48], [-4, -50], [-26, -46], [-40, -36], [-44, -14]]), {
+        fill: PAL.hair, lw: LW, shade: () => fillOnly(spline([[-30, -80], [10, -84], [44, -66], [10, -70], [-20, -70]]), PAL.hairHi, { boil: .3 })
+      });
+      stroke(quad([-26, -80], [-22, -62], [-28, -48], 8), FW * .8, { line: '#5a5266' });
+    },
   });
-  stroke(quad([-40, -118], [-34, -96], [-44, -70], 8), 4, { line: '#6a6274' });   // parting
-  const lid = P.blink ? 1 : clamp(P.lid ?? .12, 0, 1), look = P.look || [0, 0], br = P.brow ?? 0;
-  const e1 = -24 + ox, e2 = 30 + ox;
-  stroke([[e1 - 24, -46 - br * 6], [e1 + 20, -50 - br * 8]], 9); stroke([[e2 - 18, -50 - br * 8], [e2 + 24, -46 - br * 6]], 9);
-  if (P.happy) { stroke(arc(e1, -8, 18, 14, Math.PI * 1.1, Math.PI * 1.9, 10), 6); stroke(arc(e2, -8, 17, 14, Math.PI * 1.1, Math.PI * 1.9, 10), 6); }
-  else { eye(e1, -12, 24, 28, { lid, look, pupil: 5, skin: PAL.skM }); eye(e2, -12, 22 - tu * 2, 27, { lid, look, pupil: 5, skin: PAL.skM }); }
-  stroke(spline([[ox + 6, 0], [ox + 14, 28], [ox + 2, 36]], false), 5);
-  const m = P.mouth || {};
-  mouth(ox + 4, 64, 54, { o: m.o || 0, w: m.w ?? 1, sm: m.sm ?? .7, lw: 6 });
+  pop();
+}
+export function sales(P) {
+  rig(P, C_SA, {
+    torso: hem => {
+      fillOnly([[46, -340], [70, -350], [70, hem], [50, hem], [58, -300]], PAL.motif, { boil: .3 });
+      fillOnly([[58, -320], [70, -326], [70, -280], [62, -280]], PAL.motif2, { boil: .3 });
+      fillOnly([[-72, -330], [-52, -316], [-50, hem], [-72, hem]], PAL.motif, { boil: .3 });
+      stroke([[3, -505], [3, hem]], FW, { line: '#0f2150' }); for (let i = 0; i < 4; i++) dot(-3, -470 + i * 50, 2.6, '#e8e4ff');
+      shape(rr(-54, -462, 30, 34, 3), { lw: FW, line: '#0f2150' });
+      text('DAIHATSU', 38, -476, { font: '800 9.5px "Baloo 2"', fill: '#f4f1ea' });
+    },
+    collar: () => {
+      shape([[-24, -520], [0, -500], [-14, -480], [-34, -500]], { fill: PAL.navy, lw: FW });
+      shape([[24, -520], [0, -500], [14, -480], [34, -500]], { fill: PAL.navy, lw: FW });
+      for (const sx of [-1, 1]) { const pts = [[sx * 20, -512], [sx * 12, -450], [sx * 2, -410]]; stroke(pts, 6, { line: INK }); stroke(pts, 3.5, { line: PAL.lan, boil: .3 }); }
+      dot(-14, -470, 2.5, PAL.lanP); dot(12, -480, 2.5, PAL.lanP);
+      shape(rr(-13, -410, 26, 36, 3), { fill: '#ffffff', lw: FW, shade: () => { fillOnly(rect(-9, -404, 18, 10), '#8fb4e8', { boil: .2 }); fillOnly(rect(-9, -390, 18, 3), '#c9c9d6', { boil: .2 }); } });
+    },
+    head: salesHead,
+  });
 }
 
-// —— Rocky (side view, faces right; origin at ground centre) ——
-// P: {x,y,s,sq,face,riders:bool,t, wheelRot, lights}
+// —— Rocky (side view, faces right; origin at ground centre). Real scale: draw with s ≈ 2.2 next to the 600-unit people ——
 export function rocky(P) {
-  const f = P.face ?? 1;
+  const f = P.face ?? 1, S_ = (P.s ?? 1);
   push(); translate(P.x, P.y || 0);
-  if (P.shadow !== false) fillOnly(ell(0, 6, 330 * (P.s ?? 1), 22, 40), 'rgba(20,18,60,.38)', { boil: .3 });
-  scale((P.s ?? 1) * f * (P.sx ?? 1), (P.s ?? 1) * (P.sq ?? 1));
+  if (P.shadow !== false) fillOnly(ell(0, 6, 330 * S_, 26, 40), 'rgba(20,18,60,.38)', { boil: .3 });
+  scale(S_ * f * (P.sx ?? 1), S_ * (P.sq ?? 1));
   const wr = P.wheelRot || 0;
-  // body
-  const body = spline([[-318, -52], [-326, -150], [-300, -206], [-262, -258], [80, -266], [116, -256], [214, -176], [306, -158], [330, -120], [330, -56], [250, -40], [-250, -40]]);
-  shape(body, {
-    fill: PAL.car, lw: 7, shade: () => {
+  shape(spline([[-318, -52], [-326, -150], [-300, -206], [-262, -258], [80, -266], [116, -256], [214, -176], [306, -158], [330, -120], [330, -56], [250, -40], [-250, -40]]), {
+    fill: PAL.car, lw: 6, shade: () => {
       fillOnly(rect(-360, -120, 720, 30), PAL.carS, { boil: .3 });
       fillOnly(spline([[-300, -200], [100, -210], [220, -170], [300, -150], [300, -142], [100, -196], [-300, -188]]), PAL.carHi, { boil: .3 });
       fillOnly(rect(-360, -78, 720, 60), PAL.clad, { boil: .3 });
     }
   });
-  // windows (+ riders inside)
-  const win = [[-262, -236], [86, -246], [174, -180], [-252, -176]];
-  shape(win, {
-    fill: PAL.glass, lw: 6, shade: () => {
-      if (P.riders) {
-        push(); translate(-150, -120); scale(.42); sheriffHead({ lid: .5, mouth: { sm: .3 }, look: [.6, 0], hatTip: P.hatBounce || 0 }); pop();
-        push(); translate(-10, -126); scale(.42); banditHead({ look: [.6, 0], grin: 1, brow: -.3 }); pop();
-        if (P.riders !== 'cowboys') { push(); translate(110, -128); scale(.42); salesHead({ turn: 1, happy: true, mouth: { sm: 1 } }); pop(); }
+  shape([[-262, -236], [86, -246], [174, -180], [-252, -176]], {
+    fill: PAL.glass, lw: 5, shade: () => {
+      if (P.riders) {   // real-size heads inside (undo the car scale)
+        const k = 1 / 2.2;
+        push(); translate(-150, -150); scale(k); sheriffHead({ lid: .45, mouth: { sm: .5 }, look: [.6, 0], hatTip: P.hatBounce || 0 }); pop();
+        push(); translate(-20, -152); scale(k); banditHead({ look: [.6, 0], grin: 1, brow: -.3, lid: .1 }); pop();
+        if (P.riders !== 'cowboys') { push(); translate(105, -150); scale(k); salesHead({ turn: .9, happy: true, mouth: { sm: 1.2 } }); pop(); }
       }
-      fillOnly([[-200, -250], [-150, -250], [-220, -160], [-270, -160]], 'rgba(255,255,255,.22)', { boil: .2 });
-      fillOnly([[40, -250], [70, -250], [10, -160], [-20, -160]], 'rgba(255,255,255,.16)', { boil: .2 });
+      fillOnly([[-200, -250], [-150, -250], [-220, -160], [-270, -160]], 'rgba(255,255,255,.2)', { boil: .2 });
+      fillOnly([[40, -250], [70, -250], [10, -160], [-20, -160]], 'rgba(255,255,255,.14)', { boil: .2 });
     }
   });
-  stroke([[-60, -244], [-60, -176]], 12); stroke([[-200, -238], [-205, -176]], 10);   // pillars
-  // roof rails
-  shape(rr(-250, -280, 300, 12, 5), { fill: PAL.clad, lw: 5 });
-  // door lines + handles
-  stroke([[-60, -176], [-62, -60]], 4); stroke([[176, -176], [168, -64]], 4);
-  shape(rr(-110, -160, 34, 9, 4), { fill: PAL.clad, lw: 4 }); shape(rr(110, -160, 34, 9, 4), { fill: PAL.clad, lw: 4 });
-  // mirror
-  shape(spline([[160, -190], [196, -196], [200, -172], [168, -170]]), { fill: PAL.car, lw: 5 });
-  // lights
-  shape(spline([[268, -160], [326, -146], [322, -132], [272, -142]]), { fill: '#fff6d0', lw: 5 });
-  shape(rr(-326, -168, 22, 36, 6), { fill: '#a01018', lw: 5 });
-  text('ROCKY', -10, -100, { font: '800 30px "Baloo 2"', fill: '#f1f1f4' });
-  // wheels
+  stroke([[-60, -244], [-60, -176]], 10); stroke([[-200, -238], [-205, -176]], 8);
+  shape(rr(-250, -280, 300, 12, 5), { fill: PAL.clad, lw: 4 });
+  stroke([[-60, -176], [-62, -60]], 3.5); stroke([[176, -176], [168, -64]], 3.5);
+  shape(rr(-110, -160, 34, 9, 4), { fill: PAL.clad, lw: 3.5 }); shape(rr(110, -160, 34, 9, 4), { fill: PAL.clad, lw: 3.5 });
+  shape(spline([[160, -190], [196, -196], [200, -172], [168, -170]]), { fill: PAL.car, lw: 4 });
+  shape(spline([[268, -160], [326, -146], [322, -132], [272, -142]]), { fill: '#fff6d0', lw: 4 });
+  shape(rr(-326, -168, 22, 36, 6), { fill: '#a01018', lw: 4 });
+  text('ROCKY', -10, -100, { font: '800 26px "Baloo 2"', fill: '#f1f1f4' });
   for (const wx of [-196, 200]) {
-    shape(arc(wx, -50, 84, 80, Math.PI, TAU, 18).concat([[wx + 84, -40], [wx - 84, -40]]), { fill: PAL.clad, lw: 6 });
+    shape(arc(wx, -50, 84, 80, Math.PI, TAU, 18).concat([[wx + 84, -40], [wx - 84, -40]]), { fill: PAL.clad, lw: 5 });
     shape(ell(wx, -38, 64, 64, 36), {
-      fill: PAL.tire, lw: 7, shade: () => {
+      fill: PAL.tire, lw: 6, shade: () => {
         fillOnly(ell(wx, -38, 40, 40, 28), PAL.rim, { boil: .2 });
-        for (let k = 0; k < 5; k++) { const a = wr + k / 5 * TAU; stroke([[wx, -38], [wx + Math.cos(a) * 36, -38 + Math.sin(a) * 36]], 7, { line: PAL.rimS }); }
-        dot(wx, -38, 9, PAL.rimS);
+        for (let k = 0; k < 5; k++) { const a = wr + k / 5 * TAU; stroke([[wx, -38], [wx + Math.cos(a) * 36, -38 + Math.sin(a) * 36]], 6, { line: PAL.rimS }); }
+        dot(wx, -38, 8, PAL.rimS);
       }
     });
   }
   pop();
 }
 
-// —— small props ——
 export function tumbleweed(x, y, r, rot) {
   push(); translate(x, y); rotate(rot);
-  shape(ell(0, 0, r, r * .92, 26), { fill: 'rgba(196,160,110,.25)', lw: 5, line: '#c9a46c' });
-  for (let i = 0; i < 7; i++) { const a = hash(i) * TAU; stroke(arc(Math.cos(a) * r * .3, Math.sin(a) * r * .3, r * .7, r * .55, a, a + 2.4, 10), 4, { line: '#c9a46c' }); }
+  shape(ell(0, 0, r, r * .92, 26), { fill: 'rgba(196,160,110,.25)', lw: 4, line: '#c9a46c' });
+  for (let i = 0; i < 7; i++) { const a = hash(i) * TAU; stroke(arc(Math.cos(a) * r * .3, Math.sin(a) * r * .3, r * .7, r * .55, a, a + 2.4, 10), 3.5, { line: '#c9a46c' }); }
   pop();
 }
