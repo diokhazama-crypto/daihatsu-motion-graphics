@@ -63,7 +63,7 @@ SHOTS = [
     (47, 48, 17.60, 1.0, dict(zoom=[1.10, 1.14])),                        # ventilasi, kilat
     (48, DROP, 4.30, 0.6, dict(inn="focus", zoom=[1.22, 1.04])),          # lampu depan blur -> tajam, pull-back
     # ---- DROP: masuk lewat lampu depan, flash
-    (DROP, 55, 0.90, 0.95, dict(inn="mask", ov=9, mask=HEADLIGHT, flash=True, lamps=HERO_LAMPS, zoom=[1.0, 1.07])),  # hero
+    (DROP, 55, 0.90, 0.95, dict(inn="mask", ov=9, mask=HEADLIGHT, flash=True, lamps=HERO_LAMPS, shade=0.75, zoom=[1.0, 1.07])),  # hero
     (55, 57, 3.25, 0.8, dict(zoom=[1.0, 1.30])),                          # velg, push-in kuat
     (57, 59, 15.90, 0.8, dict(zoom=[1.03, 1.08])),                        # instrumen
     (59, 61, 11.20, 0.8, dict(inn="whip", zoom=[1.04, 1.08])),            # kabin
@@ -95,6 +95,8 @@ def main():
         for k in ("light", "mask"):
             if k in o:
                 s[k] = list(o[k])
+        if "shade" in o:  # gelapkan bagian atas (bekas teks bawaan)
+            s["shade"] = o["shade"]
         if "glow" in o:
             s["glow"] = o["glow"]
         if o.get("flash"):

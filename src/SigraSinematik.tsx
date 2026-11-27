@@ -41,6 +41,7 @@ type Shot = {
   flash?: boolean;
   lamps?: Pt[];
   bloom?: Bloom[];
+  shade?: number;
 };
 const shots = data.shots as Shot[];
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -119,22 +120,22 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
   if (s.inn === "focus") blur = interpolate(f, [0, 16], [22, 0], { ...clamp, easing: ease });
   if (s.inn === "whip") {
     const p = interpolate(f, [0, 5], [1, 0], { ...clamp, easing: outCubic });
-    tx += p * 45;
-    whip = Math.max(whip, p * 70);
+    tx += p * 14;
+    whip = Math.max(whip, p * 110);
   }
 
   // --- efek keluar
   if (s.out === "dim") bright *= interpolate(left, [0, 14], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
   if (s.out === "whip") {
-    const p = interpolate(left, [5, 0], [0, 1], { ...clamp, easing: inCubic });
-    tx -= p * 45;
-    whip = Math.max(whip, p * 70);
+    const p = interpolate(left, [0, 5], [1, 0], { ...clamp, easing: outCubic });
+    tx -= p * 14;
+    whip = Math.max(whip, p * 110);
   }
-  const stretchP = s.out === "stretch" ? interpolate(left, [7, 0], [0, 1], clamp) : 0;
+  const stretchP = s.out === "stretch" ? interpolate(left, [0, 7], [1, 0], clamp) : 0;
 
   // --- drop: flash + lampu hero menyala
   let flashO = 0;
-  if (s.flash) {
+  if (s.flash && f >= 0) {
     flashO = interpolate(f, [0, 1, 8], [0.85, 0.6, 0], { ...clamp, easing: outCubic });
     bright *= interpolate(f, [0, 10], [1.5, 1], clamp);
   }
@@ -156,7 +157,6 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
       transform: `translate(${(cx - 0.5) * W}px, ${(cy - 0.5) * H}px) scale(${k})`,
       borderRadius: 60 / k,
       overflow: "hidden",
-      boxShadow: `0 0 ${80 / k}px rgba(255,255,255,${0.5 * (1 - p)})`,
     };
   }
 
@@ -193,6 +193,9 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
               </AbsoluteFill>
             )}
           </AbsoluteFill>
+          {s.shade ? (
+            <AbsoluteFill style={{ background: `linear-gradient(to bottom, rgba(0,0,0,${s.shade}) 0%, rgba(0,0,0,${s.shade * 0.85}) 30%, transparent 48%)` }} />
+          ) : null}
           {s.light && <Glow x={s.light[0]} y={s.light[1]} r={s.glow === "red" ? 520 : 380} o={glowO} color={s.glow ?? "white"} />}
           {s.flash &&
             (s.lamps ?? []).map((p, k) => (
@@ -248,7 +251,7 @@ const Title: React.FC = () => {
   const ls = interpolate(f, [4, d], [46, 22]);
   const sub = interpolate(f, [14, 32], [0, 1], { ...clamp, easing: outCubic });
   return (
-    <AbsoluteFill style={{ alignItems: "center", paddingTop: 520, opacity: out, textShadow: "0 0 40px rgba(0,0,0,0.6)" }}>
+    <AbsoluteFill style={{ alignItems: "center", paddingTop: 1580, opacity: out, textShadow: "0 0 40px rgba(0,0,0,0.6)" }}>
       <div
         style={{
           fontFamily: SANS,
