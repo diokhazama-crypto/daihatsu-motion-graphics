@@ -17,14 +17,19 @@ import sys
 
 import numpy as np
 
+try:
+    import cv2  # pip install opencv-python-headless
+except ImportError:  # pragma: no cover
+    sys.exit("butuh opencv: pip install opencv-python-headless")
+
 W, H = 720, 1280
 OUT_W, OUT_H = 1080, 1920
 # teks "New Sigra 1.2 R MT IMP / Bronze Metallic" di shot pertama (frame 0-93 @38fps)
 DELOGO = "delogo=x=80:y=335:w=565:h=130:enable='lt(n,94)'"
 # gelap: low-key ala parkiran malam. terang: kecerahan mendekati asli, warna lembut, merah tetap menonjol.
 LOOKS = {
-    "gelap": dict(sat=0.10, k=2.6, gam=1.9, top=0.62, red=0.35, tint=[0.94, 1.0, 1.05]),
-    "terang": dict(sat=0.38, k=1.8, gam=1.35, top=0.96, red=0.15, tint=[0.97, 1.0, 1.03]),
+    "gelap": dict(redsat=1.35, sat=0.10, k=2.6, gam=1.9, top=0.62, red=0.35, tint=[0.94, 1.0, 1.05]),
+    "terang": dict(redsat=1.08, sat=0.38, k=1.8, gam=1.35, top=0.96, red=0.15, tint=[0.97, 1.0, 1.03]),
 }
 LOOK = LOOKS["terang" if "--terang" in sys.argv else "gelap"]
 TINT = np.array(LOOK["tint"], np.float32)  # bayangan sedikit dingin
@@ -35,6 +40,22 @@ def smooth(x, a, b):
     return t * t * (3 - 2 * t)
 
 
+def red_mask(r, mx, sat, hue):
+    """Mask area merah yang dibiarkan berwarna.
+
+    Dibuat longgar (merah kusam / gelap / agak keunguan dari kompresi video HP tetap masuk),
+    tapi oranye/bronze bodi mobil tetap di luar. Lalu dihaluskan secara spasial supaya bidang
+    merah (dashboard, panel pintu) tidak belang: lubang kecil ditutup (morph close) + blur.
+    """
+    is_r = smooth(r - (mx - 0.04), 0.0, 0.04)              # R (hampir) paling besar
+    hue_ok = np.where(hue >= 0, 1 - smooth(hue, 16, 28),   # sisi oranye: ketat (bronze ~30 derajat)
+                      1 - smooth(-hue, 30, 45))            # sisi magenta: longgar
+    m = (is_r * hue_ok * smooth(sat, 0.14, 0.32) * smooth(mx, 0.03, 0.12)).astype(np.float32)
+    m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11)))
+    m = cv2.GaussianBlur(m, (0, 0), 3.5)
+    return np.clip(m * 1.25, 0, 1)
+
+
 def grade(rgb: np.ndarray) -> np.ndarray:
     x = rgb.astype(np.float32) / 255.0
     r, g, b = x[..., 0], x[..., 1], x[..., 2]
@@ -43,11 +64,13 @@ def grade(rgb: np.ndarray) -> np.ndarray:
     mn = x.min(-1)
     sat = (mx - mn) / (mx + 1e-4)
     hue = 60.0 * (g - b) / (mx - mn + 1e-4)  # derajat, valid saat R paling besar
-    red = (r >= mx - 1e-6) * smooth(sat, 0.32, 0.55) * (1 - smooth(np.abs(hue), 14, 28)) * smooth(mx, 0.12, 0.3)
+    red = red_mask(r, mx, sat, hue)
 
     # desaturasi semua kecuali merah
-    s = LOOK["sat"] + red * 1.25
+    s = LOOK["sat"] + red * (LOOK["redsat"] - LOOK["sat"])
     col = luma[..., None] + (x - luma[..., None]) * s[..., None]
+    # merah yang agak keunguan (kompresi HP) digeser sedikit ke merah murni
+    col[..., 2] -= red * np.clip(col[..., 2] - col[..., 1], 0, None) * 0.6
     col = np.clip(col, 0, 1)
 
     # kurva tone: hitam lebih pekat, highlight (langit) roll-off
