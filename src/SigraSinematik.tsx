@@ -275,6 +275,8 @@ const Title: React.FC = () => {
   const sub = interpolate(f, [14, 32], [0, 1], { ...clamp, easing: outCubic });
   return (
     <AbsoluteFill style={{ alignItems: "center", paddingTop: 1580, opacity: out, textShadow: "0 0 40px rgba(0,0,0,0.6)" }}>
+      {/* bayangan lembut di belakang judul supaya terbaca di lantai terang */}
+      <AbsoluteFill style={{ background: "linear-gradient(to bottom, transparent 72%, rgba(0,0,0,0.5) 86%, rgba(0,0,0,0.55))", opacity: p }} />
       <div
         style={{
           fontFamily: SANS,
