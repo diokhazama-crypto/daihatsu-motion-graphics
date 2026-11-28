@@ -1,0 +1,476 @@
+{
+ "fps": 30,
+ "durationInFrames": 431,
+ "clip": "ayla_a",
+ "music": "ayla_music.wav",
+ "shots": [
+  {
+   "f": 0,
+   "d": 25,
+   "clip": "ayla_a",
+   "t": 55.2,
+   "rate": 0.8,
+   "tin": {
+    "kind": "cut",
+    "n": 0,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.02,
+    1.08
+   ],
+   "pan": 0,
+   "pre": 0,
+   "post": 4
+  },
+  {
+   "f": 25,
+   "d": 25,
+   "clip": "ayla_a",
+   "t": 3.85,
+   "rate": 0.8,
+   "tin": {
+    "kind": "zoom",
+    "n": 8,
+    "dir": "l"
+   },
+   "fx": [
+    "lightOn"
+   ],
+   "zoom": [
+    1.03,
+    1.08
+   ],
+   "pan": 0,
+   "lights": [
+    {
+     "x": 0.52,
+     "y": 0.46,
+     "c": "white",
+     "size": 80,
+     "at": 3,
+     "hold": 0.9,
+     "ground": null
+    }
+   ],
+   "pre": 4,
+   "post": 4
+  },
+  {
+   "f": 50,
+   "d": 23,
+   "clip": "ayla_a",
+   "t": 7.3,
+   "rate": 0.8,
+   "tin": {
+    "kind": "push",
+    "n": 8,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.03,
+    1.07
+   ],
+   "pan": 0,
+   "pre": 4,
+   "post": 4
+  },
+  {
+   "f": 73,
+   "d": 25,
+   "clip": "ayla_a",
+   "t": 10.7,
+   "rate": 0.8,
+   "tin": {
+    "kind": "spin",
+    "n": 8,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.08,
+    1.02
+   ],
+   "pan": 0,
+   "pre": 4,
+   "post": 5
+  },
+  {
+   "f": 98,
+   "d": 23,
+   "clip": "ayla_b",
+   "t": 6.1,
+   "rate": 0.8,
+   "tin": {
+    "kind": "slice",
+    "n": 10,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.03,
+    1.08
+   ],
+   "pan": 0,
+   "pre": 5,
+   "post": 4
+  },
+  {
+   "f": 121,
+   "d": 25,
+   "clip": "ayla_a",
+   "t": 24.35,
+   "rate": 0.8,
+   "tin": {
+    "kind": "push",
+    "n": 8,
+    "dir": "u"
+   },
+   "fx": [],
+   "zoom": [
+    1.03,
+    1.07
+   ],
+   "pan": 0,
+   "pre": 4,
+   "post": 4
+  },
+  {
+   "f": 146,
+   "d": 23,
+   "clip": "ayla_a",
+   "t": 27.78,
+   "rate": 0.8,
+   "tin": {
+    "kind": "zoom",
+    "n": 8,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.02,
+    1.07
+   ],
+   "pan": 0,
+   "pre": 4,
+   "post": 0
+  },
+  {
+   "f": 169,
+   "d": 25,
+   "clip": "ayla_a",
+   "t": 4.6,
+   "rate": 0.6,
+   "tin": {
+    "kind": "cut",
+    "n": 0,
+    "dir": "l"
+   },
+   "fx": [
+    "focus"
+   ],
+   "zoom": [
+    1.2,
+    1.04
+   ],
+   "pan": 0,
+   "lights": [
+    {
+     "x": 0.52,
+     "y": 0.46,
+     "c": "white",
+     "size": 80,
+     "at": 13,
+     "hold": 1.0,
+     "ground": null
+    }
+   ],
+   "pre": 0,
+   "post": 0
+  },
+  {
+   "f": 194,
+   "d": 48,
+   "clip": "ayla_a",
+   "t": 51.9,
+   "rate": 0.85,
+   "tin": {
+    "kind": "mask",
+    "n": 9,
+    "dir": "l"
+   },
+   "fx": [
+    "flash"
+   ],
+   "zoom": [
+    1.0,
+    1.06
+   ],
+   "pan": 0,
+   "mask": [
+    0.52,
+    0.46
+   ],
+   "lights": [
+    {
+     "x": 0.16,
+     "y": 0.64,
+     "c": "white",
+     "size": 30,
+     "at": 0,
+     "hold": 0.9,
+     "ground": 0.13
+    },
+    {
+     "x": 0.81,
+     "y": 0.645,
+     "c": "white",
+     "size": 30,
+     "at": 0,
+     "hold": 0.9,
+     "ground": 0.13
+    }
+   ],
+   "pre": 9,
+   "post": 3
+  },
+  {
+   "f": 242,
+   "d": 24,
+   "clip": "ayla_a",
+   "t": 34.8,
+   "rate": 0.8,
+   "tin": {
+    "kind": "push",
+    "n": 6,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.03,
+    1.08
+   ],
+   "pan": 0,
+   "pre": 3,
+   "post": 5
+  },
+  {
+   "f": 266,
+   "d": 24,
+   "clip": "ayla_b",
+   "t": 1.2,
+   "rate": 0.8,
+   "tin": {
+    "kind": "leak",
+    "n": 10,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.03,
+    1.08
+   ],
+   "pan": 0,
+   "pre": 5,
+   "post": 4
+  },
+  {
+   "f": 290,
+   "d": 24,
+   "clip": "ayla_b",
+   "t": 9.4,
+   "rate": 0.8,
+   "tin": {
+    "kind": "spin",
+    "n": 8,
+    "dir": "r"
+   },
+   "fx": [],
+   "zoom": [
+    1.04,
+    1.08
+   ],
+   "pan": 0,
+   "pre": 4,
+   "post": 3
+  },
+  {
+   "f": 314,
+   "d": 23,
+   "clip": "ayla_a",
+   "t": 38.2,
+   "rate": 0.8,
+   "tin": {
+    "kind": "push",
+    "n": 6,
+    "dir": "r"
+   },
+   "fx": [],
+   "zoom": [
+    1.03,
+    1.08
+   ],
+   "pan": 0,
+   "pre": 3,
+   "post": 4
+  },
+  {
+   "f": 337,
+   "d": 25,
+   "clip": "ayla_b",
+   "t": 18.1,
+   "rate": 0.8,
+   "tin": {
+    "kind": "slice",
+    "n": 8,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.03,
+    1.08
+   ],
+   "pan": 0,
+   "pre": 4,
+   "post": 3
+  },
+  {
+   "f": 362,
+   "d": 23,
+   "clip": "ayla_b",
+   "t": 15.4,
+   "rate": 0.8,
+   "tin": {
+    "kind": "push",
+    "n": 6,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.04,
+    1.08
+   ],
+   "pan": 0,
+   "pre": 3,
+   "post": 4
+  },
+  {
+   "f": 385,
+   "d": 46,
+   "clip": "ayla_a",
+   "t": 56.0,
+   "rate": 0.8,
+   "tin": {
+    "kind": "blur",
+    "n": 8,
+    "dir": "l"
+   },
+   "fx": [],
+   "zoom": [
+    1.04,
+    1.1
+   ],
+   "pan": 0,
+   "pre": 4,
+   "post": 0
+  }
+ ],
+ "texts": [
+  {
+   "f": 2,
+   "d": 48,
+   "main": "SIAP TAMPIL BEDA?",
+   "sub": "ALL NEW AYLA",
+   "pos": "bottom",
+   "big": false
+  },
+  {
+   "f": 50,
+   "d": 48,
+   "main": "DESAIN SPORTY",
+   "sub": "TAMPANG BARU YANG LEBIH BERANI",
+   "pos": "top",
+   "big": false
+  },
+  {
+   "f": 121,
+   "d": 48,
+   "main": "TRANSMISI CVT",
+   "sub": "NYAMAN TANPA KOPLING",
+   "pos": "top",
+   "big": false
+  },
+  {
+   "f": 194,
+   "d": 48,
+   "main": "ALL NEW AYLA",
+   "sub": "1.2 R CVT",
+   "pos": "top",
+   "big": true
+  },
+  {
+   "f": 266,
+   "d": 48,
+   "main": "PILIH WARNAMU",
+   "sub": "HITAM ATAU MERAH",
+   "pos": "top",
+   "big": false
+  },
+  {
+   "f": 337,
+   "d": 48,
+   "main": "KABIN MODERN",
+   "sub": "NYAMAN DI SETIAP PERJALANAN",
+   "pos": "top",
+   "big": false
+  },
+  {
+   "f": 385,
+   "d": 46,
+   "main": "TEST DRIVE SEKARANG",
+   "sub": "HUBUNGI KAMI",
+   "pos": "bottom",
+   "big": false
+  }
+ ],
+ "beats": [
+  2,
+  13,
+  25,
+  38,
+  50,
+  61,
+  73,
+  86,
+  98,
+  110,
+  121,
+  133,
+  146,
+  158,
+  169,
+  182,
+  194,
+  206,
+  217,
+  230,
+  242,
+  253,
+  266,
+  278,
+  290,
+  302,
+  314,
+  325,
+  337,
+  350,
+  362,
+  374,
+  385,
+  397,
+  409
+ ],
+ "drop": 194
+}

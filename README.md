@@ -11,6 +11,7 @@ Potongan, zoom, flash dan teks semuanya dikunci ke ketukan lagu.
 | `GranMaxIklan` | v3: iklan profesional, pakai lagu MP3 yang sama, potongan tiap bar | 60 detik |
 | `SigraSinematik` | Sigra 1.2 R MT: gaya sinematik malam (grading gelap, aksen merah, lampu menyala, mask lewat lampu) | 30 detik |
 | `SigraTerang` | Sama persis dengan `SigraSinematik`, tapi grading terang (kecerahan mendekati asli) | 30 detik |
+| `AylaTerang` | All New Ayla 1.2 R CVT: gaya sama dengan `SigraTerang`, gabungan Ayla hitam & merah, lagu mp3 | 14,4 detik |
 
 Render versi 3:
 
@@ -31,6 +32,19 @@ npx remotion render SigraSinematik out/sigra_sinematik.mp4 --crf=18
 python3 scripts/prep_sigra.py <Sigra_IMP_30detik_speed125.mp4> --terang   # public/clips/sigra_terang.mp4
 npx remotion render SigraTerang out/sigra_terang.mp4 --crf=18
 ```
+
+Render Ayla (lagu mp3 14,4 dtk, 152 BPM, drop di 6,46 dtk):
+
+```bash
+python3 scripts/prep_sigra.py <VID_..._204340.mp4> --terang --no-delogo --no-audio --out public/clips/ayla_a_terang.mp4
+python3 scripts/prep_sigra.py <VID_..._203838.mp4> --terang --no-delogo --no-audio --res 1080x1920 --out public/clips/ayla_b_terang.mp4
+ffmpeg -i <lagu.mp3> -ac 2 -ar 48000 public/ayla_music.wav
+python3 scripts/build_ayla.py         # src/ayla.json (edit SHOTS / TEXTS di sini)
+npx remotion render AylaTerang out/ayla_terang.mp4 --crf=18
+```
+
+Semua video memakai komponen yang sama (`Sinematik` di `src/SigraSinematik.tsx`) dan alat timeline
+bersama `scripts/timeline.py`.
 
 Efek di `SigraSinematik` / `SigraTerang`:
 - transisi (berpusat di ketukan): `push` (whip blur searah), `zoom` (zoom-through), `spin`,

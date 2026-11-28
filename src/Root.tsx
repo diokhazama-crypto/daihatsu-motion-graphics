@@ -1,10 +1,13 @@
 import { Composition } from "remotion";
 import { GranMaxPromo } from "./GranMaxPromo";
 import { GranMaxIklan } from "./GranMaxIklan";
-import { SigraSinematik } from "./SigraSinematik";
+import { Data, Sinematik, SigraSinematik } from "./SigraSinematik";
 import timeline from "./timeline.json";
 import iklan from "./iklan.json";
 import sigra from "./sigra.json";
+import ayla from "./ayla.json";
+
+const AylaTerang: React.FC = () => <Sinematik data={ayla as Data} terang />;
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -45,5 +48,7 @@ export const RemotionRoot: React.FC = () => (
       width={1080}
       height={1920}
     />
+    {/* Ayla: gaya sama dengan SigraTerang, lagu mp3 14 dtk */}
+    <Composition id="AylaTerang" component={AylaTerang} durationInFrames={ayla.durationInFrames} fps={ayla.fps} width={1080} height={1920} />
   </>
 );

@@ -15,7 +15,7 @@ import {
   staticFile,
   useCurrentFrame,
 } from "remotion";
-import data from "./sigra.json";
+import sigraData from "./sigra.json";
 import { H, Lamp, Light, W } from "./sigraFx";
 
 // Gaya sinematik: footage sudah di-grade (scripts/prep_sigra.py), gerak kamera pelan,
@@ -41,8 +41,8 @@ type Shot = {
   lights?: Light[];
 };
 type Txt = { f: number; d: number; main: string; sub: string; pos: string; big: boolean };
-const shots = data.shots as Shot[];
-const texts = data.texts as Txt[];
+export type Data = { fps: number; durationInFrames: number; clip: string; music: string; shots: (Shot & { clip?: string })[]; texts: Txt[] };
+const DataCtx = createContext<Data>(sigraData as Data);
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 const eio = Easing.inOut(Easing.cubic);
@@ -67,9 +67,9 @@ const useFonts = () => {
 // terang = grading mendekati kecerahan asli (public/clips/sigra_terang.mp4) + vignette tipis
 const Terang = createContext(false);
 
-const Clip: React.FC<{ trim: number; rate: number }> = ({ trim, rate }) => (
+const Clip: React.FC<{ clip: string; trim: number; rate: number }> = ({ clip, trim, rate }) => (
   <OffthreadVideo
-    src={staticFile(`clips/${data.clip}${useContext(Terang) ? "_terang" : ""}.mp4`)}
+    src={staticFile(`clips/${clip}${useContext(Terang) ? "_terang" : ""}.mp4`)}
     trimBefore={trim}
     playbackRate={rate}
     muted
@@ -212,8 +212,10 @@ const Leak: React.FC<{ p: number }> = ({ p }) => {
 };
 
 // ------------------------------------------------------------------ shot
-const ShotView: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
+const ShotView: React.FC<{ s: Shot & { clip?: string }; i: number }> = ({ s, i }) => {
   const terang = useContext(Terang);
+  const data = useContext(DataCtx);
+  const shots = data.shots;
   const g = useCurrentFrame();
   const f = g - s.pre; // 0 = titik potong (ketukan)
   const trim = Math.max(0, Math.round(s.t * data.fps - s.pre * s.rate));
@@ -280,7 +282,7 @@ const ShotView: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
           }}
         >
           <AbsoluteFill style={{ transform: `translateX(${pan}%) scale(${cam})` }}>
-            <Clip trim={trim} rate={s.rate} />
+            <Clip clip={s.clip ?? data.clip} trim={trim} rate={s.rate} />
             {(s.lights ?? []).map((l, k) => (
               <Lamp key={k} l={l} f={f} />
             ))}
@@ -350,9 +352,13 @@ const Grain: React.FC = () => {
 // keluar dengan blur + tracking melebar
 const Caption: React.FC<{ t: Txt }> = ({ t }) => {
   const f = useCurrentFrame();
-  const size = t.big ? 104 : 74;
-  const lsFrom = t.big ? 46 : 34;
-  const lsTo = t.big ? 22 : 16;
+  // teks panjang diperkecil supaya muat (lebar huruf Montserrat ~0.7em + tracking)
+  const n = t.main.length;
+  const fit = Math.min(1, 960 / (n * ((t.big ? 104 : 74) * 0.7 + (t.big ? 46 : 34))));
+  const size = (t.big ? 104 : 74) * fit;
+  const lsFrom = (t.big ? 46 : 34) * fit;
+  const lsTo = (t.big ? 22 : 16) * fit;
+  const step = Math.min(1.3, 16 / n); // jeda antar huruf
   const outP = interpolate(f, [t.d - 10, t.d], [0, 1], { ...clamp, easing: ein });
   const ls = interpolate(f, [0, t.d], [lsFrom, lsTo]) + outP * 18;
   const line = interpolate(f, [8, 28], [0, 1], { ...clamp, easing: eout }) * (1 - outP);
@@ -382,7 +388,7 @@ const Caption: React.FC<{ t: Txt }> = ({ t }) => {
       >
         <div style={{ display: "flex", fontFamily: SANS, fontWeight: 300, fontSize: size, color: "#fff", whiteSpace: "pre", marginLeft: ls }}>
           {t.main.split("").map((ch, k) => {
-            const p = interpolate(f, [2 + k * 1.3, 16 + k * 1.3], [0, 1], { ...clamp, easing: eout });
+            const p = interpolate(f, [2 + k * step, 16 + k * step], [0, 1], { ...clamp, easing: eout });
             return (
               <span
                 key={k}
@@ -420,9 +426,13 @@ const Caption: React.FC<{ t: Txt }> = ({ t }) => {
 };
 
 // ------------------------------------------------------------------ komposisi
-export const SigraSinematik: React.FC<{ terang?: boolean }> = ({ terang = false }) => {
+// komponen umum: data timeline (src/*.json dari scripts/build_*.py) + varian terang
+export const Sinematik: React.FC<{ data: Data; terang?: boolean }> = ({ data, terang = false }) => {
   useFonts();
+  const shots = data.shots;
+  const texts = data.texts;
   return (
+    <DataCtx.Provider value={data}>
     <Terang.Provider value={terang}>
       <AbsoluteFill style={{ background: "#000" }}>
         {shots.map((s, i) => (
@@ -440,5 +450,8 @@ export const SigraSinematik: React.FC<{ terang?: boolean }> = ({ terang = false 
         <Audio src={staticFile(data.music)} />
       </AbsoluteFill>
     </Terang.Provider>
+    </DataCtx.Provider>
   );
 };
+
+export const SigraSinematik: React.FC<{ terang?: boolean }> = ({ terang = false }) => <Sinematik data={sigraData as Data} terang={terang} />;

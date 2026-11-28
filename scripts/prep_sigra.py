@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Siapkan footage Sigra untuk komposisi SigraSinematik.
+"""Siapkan footage (grading + upscale) untuk komposisi SigraSinematik / SigraTerang / AylaTerang.
 
 - buang teks bawaan di shot pembuka (delogo)
 - grading gelap ala referensi: abu-abu dingin, hitam pekat, highlight ditekan,
@@ -11,6 +11,12 @@ Pemakaian:
   python3 scripts/prep_sigra.py <Sigra_IMP_30detik_speed125.mp4>
   python3 scripts/prep_sigra.py <video> --terang  # versi terang -> public/clips/sigra_terang.mp4
   python3 scripts/prep_sigra.py <video> --test 1.5 11 29.5   # cuma bikin PNG uji
+
+Opsi untuk video lain (mis. Ayla):
+  --out public/clips/x.mp4   file hasil
+  --res 1080x1920            resolusi saat grading (default 720x1280; pakai 1080x1920 utk sumber 1080p)
+  --no-delogo                jangan hapus teks Sigra
+  --no-audio                 jangan tulis public/sigra_music.wav
 """
 import subprocess
 import sys
@@ -22,10 +28,14 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit("butuh opencv: pip install opencv-python-headless")
 
-W, H = 720, 1280
+def opt(name, default=None):
+    return sys.argv[sys.argv.index(name) + 1] if name in sys.argv else default
+
+
+W, H = map(int, opt("--res", "720x1280").split("x"))
 OUT_W, OUT_H = 1080, 1920
 # teks "New Sigra 1.2 R MT IMP / Bronze Metallic" di shot pertama (frame 0-93 @38fps)
-DELOGO = "delogo=x=80:y=335:w=565:h=130:enable='lt(n,94)'"
+DELOGO = "" if "--no-delogo" in sys.argv else "delogo=x=80:y=335:w=565:h=130:enable='lt(n,94)',"
 # gelap: low-key ala parkiran malam. terang: kecerahan mendekati asli, warna lembut, merah tetap menonjol.
 LOOKS = {
     "gelap": dict(redsat=1.35, sat=0.10, k=2.6, gam=1.9, top=0.62, red=0.35, tint=[0.94, 1.0, 1.05]),
@@ -85,7 +95,7 @@ def grade(rgb: np.ndarray) -> np.ndarray:
 
 
 def frames(src, extra=()):
-    cmd = ["ffmpeg", "-v", "error", *extra, "-i", src, "-vf", f"{DELOGO},scale={W}:{H}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
+    cmd = ["ffmpeg", "-v", "error", *extra, "-i", src, "-vf", f"{DELOGO}scale={W}:{H}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     n = W * H * 3
     while True:
@@ -106,10 +116,12 @@ def main():
             print("tulis", name)
         return
 
-    out = "public/clips/sigra_terang.mp4" if "--terang" in sys.argv else "public/clips/sigra.mp4"
+    out = opt("--out", "public/clips/sigra_terang.mp4" if "--terang" in sys.argv else "public/clips/sigra.mp4")
+    fps = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=r_frame_rate",
+                          "-of", "csv=p=0", src], capture_output=True, text=True, check=True).stdout.strip()
     subprocess.run(["mkdir", "-p", "public/clips"], check=True)
     enc = subprocess.Popen(
-        ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", "38", "-i", "-",
+        ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", fps, "-i", "-",
          "-vf", f"scale={OUT_W}:{OUT_H}:flags=lanczos,unsharp=5:5:0.4,format=yuv420p",
          "-c:v", "libx264", "-preset", "medium", "-crf", "16", "-g", "19", out],
         stdin=subprocess.PIPE,
@@ -120,6 +132,9 @@ def main():
             print("frame", i, flush=True)
     enc.stdin.close()
     enc.wait()
+    if "--no-audio" in sys.argv:
+        print(f"ok {out}")
+        return
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-vn", "-ac", "2", "-ar", "48000", "public/sigra_music.wav"], check=True)
     print(f"ok {out} + public/sigra_music.wav")
 
