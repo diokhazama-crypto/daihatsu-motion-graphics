@@ -240,7 +240,7 @@
    "f": 242,
    "d": 24,
    "clip": "ayla_a",
-   "t": 34.8,
+   "t": 39.4,
    "rate": 0.8,
    "tin": {
     "kind": "push",
@@ -280,7 +280,7 @@
    "f": 290,
    "d": 24,
    "clip": "ayla_a",
-   "t": 48.5,
+   "t": 33.1,
    "rate": 0.8,
    "tin": {
     "kind": "slice",
@@ -299,8 +299,8 @@
   {
    "f": 314,
    "d": 23,
-   "clip": "ayla_a",
-   "t": 38.2,
+   "clip": "ayla_b",
+   "t": 13.2,
    "rate": 0.8,
    "tin": {
     "kind": "push",
@@ -340,7 +340,7 @@
    "f": 362,
    "d": 23,
    "clip": "ayla_a",
-   "t": 33.1,
+   "t": 16.2,
    "rate": 0.8,
    "tin": {
     "kind": "push",
@@ -559,7 +559,7 @@
    "f": 673,
    "d": 24,
    "clip": "ayla_a",
-   "t": 36.0,
+   "t": 38.2,
    "rate": 0.8,
    "tin": {
     "kind": "push",
@@ -639,7 +639,7 @@
    "f": 768,
    "d": 25,
    "clip": "ayla_a",
-   "t": 49.8,
+   "t": 9.3,
    "rate": 0.8,
    "tin": {
     "kind": "zoom",
@@ -659,7 +659,7 @@
    "f": 793,
    "d": 23,
    "clip": "ayla_a",
-   "t": 8.6,
+   "t": 12.85,
    "rate": 0.8,
    "tin": {
     "kind": "push",
@@ -717,9 +717,17 @@
    "f": 194,
    "d": 48,
    "main": "ALL NEW AYLA",
-   "sub": "1.2 R CVT",
+   "sub": "1.2 R",
    "pos": "top",
    "big": true
+  },
+  {
+   "f": 266,
+   "d": 48,
+   "main": "ULTRA BLACK SOLID",
+   "sub": "ELEGAN DARI SEGALA SISI",
+   "pos": "top",
+   "big": false
   },
   {
    "f": 433,
@@ -736,6 +744,14 @@
    "sub": "NYAMAN DI SETIAP PERJALANAN",
    "pos": "top",
    "big": false
+  },
+  {
+   "f": 625,
+   "d": 48,
+   "main": "SIAP DIBAWA\nKE MANA SAJA",
+   "sub": "LINCAH DI JALAN KOTA",
+   "pos": "top",
+   "big": true
   },
   {
    "f": 816,

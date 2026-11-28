@@ -353,8 +353,11 @@ const Grain: React.FC = () => {
 const Caption: React.FC<{ t: Txt }> = ({ t }) => {
   const f = useCurrentFrame();
   // teks panjang diperkecil supaya muat (lebar huruf Montserrat ~0.7em + tracking)
-  const n = t.main.length;
-  const fit = Math.min(1, 960 / (n * ((t.big ? 104 : 74) * 0.7 + (t.big ? 46 : 34))));
+  // "\n" di judul = baris baru; ukuran disesuaikan dengan baris terpanjang
+  const lines = t.main.split("\n");
+  const n = t.main.replace(/\n/g, "").length;
+  const longest = Math.max(...lines.map((l) => l.length));
+  const fit = Math.min(1, 960 / (longest * ((t.big ? 104 : 74) * 0.7 + (t.big ? 46 : 34))));
   const size = (t.big ? 104 : 74) * fit;
   const lsFrom = (t.big ? 46 : 34) * fit;
   const lsTo = (t.big ? 22 : 16) * fit;
@@ -386,25 +389,31 @@ const Caption: React.FC<{ t: Txt }> = ({ t }) => {
           textShadow: "0 0 40px rgba(0,0,0,0.6)",
         }}
       >
-        <div style={{ display: "flex", fontFamily: SANS, fontWeight: 300, fontSize: size, color: "#fff", whiteSpace: "pre", marginLeft: ls }}>
-          {t.main.split("").map((ch, k) => {
-            const p = interpolate(f, [2 + k * step, 16 + k * step], [0, 1], { ...clamp, easing: eout });
-            return (
-              <span
-                key={k}
-                style={{
-                  display: "inline-block",
-                  marginRight: ls,
-                  opacity: p,
-                  transform: `translateY(${(1 - p) * 34}px)`,
-                  filter: p < 1 ? `blur(${(1 - p) * 10}px)` : undefined,
-                }}
-              >
-                {ch}
-              </span>
-            );
-          })}
-        </div>
+        {lines.map((ln, li) => {
+          const off = lines.slice(0, li).join("").length; // urutan huruf berlanjut antar baris
+          return (
+            <div key={li} style={{ display: "flex", fontFamily: SANS, fontWeight: 300, fontSize: size, lineHeight: 1.18, color: "#fff", whiteSpace: "pre", marginLeft: ls }}>
+              {ln.split("").map((ch, j) => {
+                const k = off + j;
+                const p = interpolate(f, [2 + k * step, 16 + k * step], [0, 1], { ...clamp, easing: eout });
+                return (
+                  <span
+                    key={j}
+                    style={{
+                      display: "inline-block",
+                      marginRight: ls,
+                      opacity: p,
+                      transform: `translateY(${(1 - p) * 34}px)`,
+                      filter: p < 1 ? `blur(${(1 - p) * 10}px)` : undefined,
+                    }}
+                  >
+                    {ch}
+                  </span>
+                );
+              })}
+            </div>
+          );
+        })}
         <div style={{ width: (t.big ? 220 : 160) * line, height: 3, background: RED, margin: t.big ? "26px 0 24px" : "20px 0 20px", boxShadow: "0 0 18px rgba(255,30,30,0.8)" }} />
         <div
           style={{
