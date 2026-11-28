@@ -10,6 +10,7 @@ Potongan, zoom, flash dan teks semuanya dikunci ke ketukan lagu.
 | `GranMaxPromo` | v1-v2: jedag jedug TikTok, sinkron lagu MP3 | 60 detik |
 | `GranMaxIklan` | v3: iklan profesional, pakai lagu MP3 yang sama, potongan tiap bar | 60 detik |
 | `SigraSinematik` | Sigra 1.2 R MT: gaya sinematik malam (grading gelap, aksen merah, lampu menyala, mask lewat lampu) | 30 detik |
+| `SigraTerang` | Sama persis dengan `SigraSinematik`, tapi grading terang (kecerahan mendekati asli) | 30 detik |
 
 Render versi 3:
 
@@ -25,6 +26,10 @@ Render Sigra (pakai lagu dari video Sigra-nya sendiri, 152 BPM, drop di 20,1 dtk
 python3 scripts/prep_sigra.py <Sigra_IMP_30detik_speed125.mp4>   # public/clips/sigra.mp4 (sudah di-grade) + public/sigra_music.wav
 python3 scripts/build_sigra.py        # src/sigra.json (edit SHOTS / TITLE di sini)
 npx remotion render SigraSinematik out/sigra_sinematik.mp4 --crf=18
+
+# versi terang
+python3 scripts/prep_sigra.py <Sigra_IMP_30detik_speed125.mp4> --terang   # public/clips/sigra_terang.mp4
+npx remotion render SigraTerang out/sigra_terang.mp4 --crf=18
 ```
 
 Efek di `SigraSinematik`: `lightOn` (lampu menyala), `fromBlack`, `dim` (meredup ke gelap),

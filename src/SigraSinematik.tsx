@@ -1,7 +1,7 @@
 import "@fontsource/montserrat/300.css";
 import "@fontsource/montserrat/500.css";
 import "@fontsource/montserrat/600.css";
-import React, { useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   AbsoluteFill,
   Audio,
@@ -79,10 +79,14 @@ const Glow: React.FC<{ x: number; y: number; r: number; o: number; color?: strin
     />
   );
 
+// ------------------------------------------------------------------ varian
+// terang = grading mendekati kecerahan asli (public/clips/sigra_terang.mp4) + vignette tipis
+const Terang = createContext(false);
+
 // ------------------------------------------------------------------ video
 const Clip: React.FC<{ trim: number; rate: number; style?: React.CSSProperties }> = ({ trim, rate, style }) => (
   <OffthreadVideo
-    src={staticFile(`clips/${data.clip}.mp4`)}
+    src={staticFile(`clips/${data.clip}${useContext(Terang) ? "_terang" : ""}.mp4`)}
     trimBefore={trim}
     playbackRate={rate}
     muted
@@ -91,6 +95,7 @@ const Clip: React.FC<{ trim: number; rate: number; style?: React.CSSProperties }
 );
 
 const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
+  const terang = useContext(Terang);
   const local = useCurrentFrame();
   const f = local - s.ov; // 0 = titik potong (ketukan)
   const left = s.d - f; // sisa frame sampai potongan berikutnya
@@ -194,7 +199,11 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
             )}
           </AbsoluteFill>
           {s.shade ? (
-            <AbsoluteFill style={{ background: `linear-gradient(to bottom, rgba(0,0,0,${s.shade}) 0%, rgba(0,0,0,${s.shade * 0.85}) 30%, transparent 48%)` }} />
+            <AbsoluteFill
+              style={{
+                background: `linear-gradient(to bottom, rgba(0,0,0,${s.shade * (terang ? 0.6 : 1)}) 0%, rgba(0,0,0,${s.shade * (terang ? 0.45 : 0.85)}) 30%, transparent 48%)`,
+              }}
+            />
           ) : null}
           {s.light && <Glow x={s.light[0]} y={s.light[1]} r={s.glow === "red" ? 520 : 380} o={glowO} color={s.glow ?? "white"} />}
           {s.flash &&
@@ -212,7 +221,20 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
 };
 
 // ------------------------------------------------------------------ grading akhir & tekstur
-const Grade: React.FC = () => (
+const Grade: React.FC = () => {
+  const terang = useContext(Terang);
+  return terang ? (
+    <>
+      {/* vignette tipis saja, gambar tetap terang */}
+      <AbsoluteFill
+        style={{
+          background:
+            "radial-gradient(ellipse 95% 75% at 50% 50%, transparent 55%, rgba(0,0,0,0.30) 100%), linear-gradient(to bottom, rgba(0,0,0,0.18), transparent 18%, transparent 78%, rgba(0,0,0,0.30))",
+        }}
+      />
+      <AbsoluteFill style={{ background: "rgba(20,60,70,0.06)", mixBlendMode: "soft-light" }} />
+    </>
+  ) : (
   <>
     {/* vignette kuat + atas/bawah gelap, seperti lampu parkiran */}
     <AbsoluteFill
@@ -224,7 +246,8 @@ const Grade: React.FC = () => (
     {/* bayangan sedikit teal */}
     <AbsoluteFill style={{ background: "rgba(20,60,70,0.10)", mixBlendMode: "soft-light" }} />
   </>
-);
+  );
+};
 
 const Grain: React.FC = () => {
   const g = useCurrentFrame();
@@ -276,9 +299,10 @@ const Title: React.FC = () => {
 };
 
 // ------------------------------------------------------------------ komposisi
-export const SigraSinematik: React.FC = () => {
+export const SigraSinematik: React.FC<{ terang?: boolean }> = ({ terang = false }) => {
   useFonts();
   return (
+    <Terang.Provider value={terang}>
     <AbsoluteFill style={{ background: "#000" }}>
       {shots.map((s, i) => (
         <Sequence key={i} from={s.f - s.ov} durationInFrames={s.d + s.ov} layout="none">
@@ -292,5 +316,6 @@ export const SigraSinematik: React.FC = () => {
       <Grain />
       <Audio src={staticFile(data.music)} />
     </AbsoluteFill>
+    </Terang.Provider>
   );
 };

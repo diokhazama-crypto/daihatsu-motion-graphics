@@ -35,5 +35,15 @@ export const RemotionRoot: React.FC = () => (
       width={1080}
       height={1920}
     />
+    {/* Sigra versi terang: efek & potongan sama, grading tidak segelap */}
+    <Composition
+      id="SigraTerang"
+      component={SigraSinematik}
+      defaultProps={{ terang: true }}
+      durationInFrames={sigra.durationInFrames}
+      fps={sigra.fps}
+      width={1080}
+      height={1920}
+    />
   </>
 );

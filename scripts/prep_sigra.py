@@ -9,6 +9,7 @@
 
 Pemakaian:
   python3 scripts/prep_sigra.py <Sigra_IMP_30detik_speed125.mp4>
+  python3 scripts/prep_sigra.py <video> --terang  # versi terang -> public/clips/sigra_terang.mp4
   python3 scripts/prep_sigra.py <video> --test 1.5 11 29.5   # cuma bikin PNG uji
 """
 import subprocess
@@ -20,7 +21,13 @@ W, H = 720, 1280
 OUT_W, OUT_H = 1080, 1920
 # teks "New Sigra 1.2 R MT IMP / Bronze Metallic" di shot pertama (frame 0-93 @38fps)
 DELOGO = "delogo=x=80:y=335:w=565:h=130:enable='lt(n,94)'"
-TINT = np.array([0.94, 1.0, 1.05], np.float32)  # bayangan sedikit dingin
+# gelap: low-key ala parkiran malam. terang: kecerahan mendekati asli, warna lembut, merah tetap menonjol.
+LOOKS = {
+    "gelap": dict(sat=0.10, k=2.6, gam=1.9, top=0.62, red=0.35, tint=[0.94, 1.0, 1.05]),
+    "terang": dict(sat=0.38, k=1.8, gam=1.35, top=0.96, red=0.15, tint=[0.97, 1.0, 1.03]),
+}
+LOOK = LOOKS["terang" if "--terang" in sys.argv else "gelap"]
+TINT = np.array(LOOK["tint"], np.float32)  # bayangan sedikit dingin
 
 
 def smooth(x, a, b):
@@ -39,15 +46,15 @@ def grade(rgb: np.ndarray) -> np.ndarray:
     red = (r >= mx - 1e-6) * smooth(sat, 0.32, 0.55) * (1 - smooth(np.abs(hue), 14, 28)) * smooth(mx, 0.12, 0.3)
 
     # desaturasi semua kecuali merah
-    s = 0.10 + red * 1.25
+    s = LOOK["sat"] + red * 1.25
     col = luma[..., None] + (x - luma[..., None]) * s[..., None]
     col = np.clip(col, 0, 1)
 
-    # kurva tone: low-key, hitam pekat, highlight (langit) roll-off ke abu gelap
-    k, gam, top = 2.6, 1.9, 0.62
+    # kurva tone: hitam lebih pekat, highlight (langit) roll-off
+    k, gam, top = LOOK["k"], LOOK["gam"], LOOK["top"]
     col = top * (1 - np.exp(-k * col**gam)) / (1 - np.exp(-k))
     # merah sedikit diangkat supaya "menyala" di atas latar gelap
-    col = col * (1 + 0.35 * red[..., None])
+    col = col * (1 + LOOK["red"] * red[..., None])
     # tint dingin di bayangan, netral di highlight
     lum2 = col.mean(-1, keepdims=True)
     col = col * (TINT + (1 - TINT) * np.clip(lum2 * 1.6, 0, 1))
@@ -76,11 +83,12 @@ def main():
             print("tulis", name)
         return
 
+    out = "public/clips/sigra_terang.mp4" if "--terang" in sys.argv else "public/clips/sigra.mp4"
     subprocess.run(["mkdir", "-p", "public/clips"], check=True)
     enc = subprocess.Popen(
         ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", "38", "-i", "-",
          "-vf", f"scale={OUT_W}:{OUT_H}:flags=lanczos,unsharp=5:5:0.4,format=yuv420p",
-         "-c:v", "libx264", "-preset", "medium", "-crf", "16", "-g", "19", "public/clips/sigra.mp4"],
+         "-c:v", "libx264", "-preset", "medium", "-crf", "16", "-g", "19", out],
         stdin=subprocess.PIPE,
     )
     for i, fr in enumerate(frames(src)):
@@ -90,7 +98,7 @@ def main():
     enc.stdin.close()
     enc.wait()
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-vn", "-ac", "2", "-ar", "48000", "public/sigra_music.wav"], check=True)
-    print("ok public/clips/sigra.mp4 + public/sigra_music.wav")
+    print(f"ok {out} + public/sigra_music.wav")
 
 
 if __name__ == "__main__":
