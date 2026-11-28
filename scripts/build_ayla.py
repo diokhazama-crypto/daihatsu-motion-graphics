@@ -27,13 +27,14 @@ DROP = 16
 DROP2 = P(16)
 
 # bagian bersih di video sumber (dtk). Dilewati: frame noise warna-warni (A 6.9), layar kamera HP (A 26),
-# tangan membuka bagasi (A 41-44), transisi bawaan video A di antara shot.
+# tangan membuka bagasi (A 41-44), transisi bawaan video A di antara shot (efek cermin A 55.0-55.45,
+# zoom A 24.2-24.45, putih A 27.6-27.85, zoom A 54.6-55), fade-out A >56.5, fade-in B <1.6.
 # Tidak dipakai karena badge "CVT" terbaca: lampu belakang close-up (A 34.6-37.85) & tampak belakang lurus (A 48.3-51.35).
 SEGS = {
     "ayla_a": [(0.5, 3.3), (3.7, 6.85), (7.05, 10.1), (10.5, 13.65), (14.0, 17.0), (17.3, 20.5), (21.0, 24.1),
-               (24.25, 25.8), (27.65, 29.25), (33.0, 34.35), (34.6, 37.85), (38.0, 40.9), (45.0, 48.1),
-               (48.3, 51.35), (51.6, 54.98), (55.1, 57.5)],
-    "ayla_b": [(0.6, 5.75), (5.95, 8.65), (9.15, 11.75), (11.9, 14.45), (15.2, 17.75), (17.9, 20.4)],
+               (24.5, 25.8), (27.9, 29.25), (33.0, 34.35), (34.6, 37.85), (38.0, 40.9), (45.0, 48.1),
+               (48.3, 51.35), (51.7, 54.55), (55.5, 56.5)],
+    "ayla_b": [(1.6, 5.75), (5.95, 8.65), (9.15, 11.75), (11.9, 14.45), (15.2, 17.75), (17.9, 20.4)],
 }
 
 HEADLIGHT = (0.52, 0.46)  # lampu depan di close-up (video A 3.7-6.8 dtk)
@@ -43,24 +44,24 @@ FRONT_ON = [L(0.16, 0.64, size=30, at=0, hold=0.9, ground=0.13), L(0.81, 0.645, 
 # (ketukan mulai, ketukan selesai, klip, detik di video sumber, playbackRate, opsi)
 SHOTS = [
     # ===== putaran 1: Ayla hitam
-    (None, 2, "ayla_a", 55.20, 0.8, dict(zoom=[1.02, 1.08])),                                   # hero sudut rendah (= penutup)
+    (None, 2, "ayla_a", 55.50, 0.8, dict(zoom=[1.02, 1.08])),                                   # hero sudut rendah (= penutup)
     (2, 4, "ayla_a", 3.85, 0.8, dict(tin=T("zoom", 8), fx=["lightOn"], lights=HEAD_ON, zoom=[1.03, 1.08])),  # lampu depan MENYALA
     (4, 6, "ayla_a", 7.30, 0.8, dict(tin=T("push", 8, "l"), zoom=[1.03, 1.07])),                # grille sudut rendah
     (6, 8, "ayla_a", 10.70, 0.8, dict(tin=T("spin", 8), zoom=[1.08, 1.02])),                    # velg
     (8, 10, "ayla_a", 14.20, 0.8, dict(tin=T("slice", 10), zoom=[1.03, 1.08])),                 # spion
-    (10, 12, "ayla_a", 24.35, 0.8, dict(tin=T("push", 8, "u"), zoom=[1.03, 1.07])),             # tuas transmisi (tanpa teks)
-    (12, 14, "ayla_a", 27.78, 0.8, dict(tin=T("zoom", 8), zoom=[1.02, 1.07])),                  # setir
+    (10, 12, "ayla_a", 24.60, 0.8, dict(tin=T("push", 8, "u"), zoom=[1.03, 1.07])),             # tuas transmisi (tanpa teks)
+    (12, 14, "ayla_a", 28.00, 0.8, dict(tin=T("zoom", 8), zoom=[1.02, 1.07])),                  # setir
     (14, DROP, "ayla_a", 4.60, 0.6, dict(fx=["focus"], lights=[L(0.52, 0.46, size=80, at=("b", 15), hold=1.0)], zoom=[1.2, 1.04])),  # lampu blur -> tajam -> menyala
-    (DROP, 20, "ayla_a", 51.90, 0.85, dict(tin=T("mask", 9), mask=HEADLIGHT, fx=["flash"], lights=FRONT_ON, zoom=[1.0, 1.06])),  # DROP: tampak depan
+    (DROP, 20, "ayla_a", 51.98, 0.85, dict(tin=T("mask", 9), mask=HEADLIGHT, fx=["flash"], lights=FRONT_ON, zoom=[1.0, 1.06])),  # DROP: tampak depan
     (20, 22, "ayla_a", 39.40, 0.8, dict(tin=T("push", 6, "l"), zoom=[1.03, 1.08])),             # emblem AYLA
     (22, 24, "ayla_a", 17.50, 0.8, dict(tin=T("spin", 8, "r"), zoom=[1.03, 1.08])),             # handle pintu
     (24, 26, "ayla_a", 33.10, 0.8, dict(tin=T("slice", 8), zoom=[1.03, 1.08])),                 # belakang 3/4
     (26, 28, "ayla_b", 13.20, 0.8, dict(tin=T("push", 6, "r"), zoom=[1.03, 1.08])),             # depan 3/4 merah (cuplikan)
     (28, 30, "ayla_a", 21.20, 0.8, dict(tin=T("zoom", 6), zoom=[1.03, 1.08])),                  # kabin
     (30, 32, "ayla_a", 16.20, 0.8, dict(tin=T("push", 6, "l"), zoom=[1.03, 1.08])),             # spion
-    (32, P(0), "ayla_a", 53.50, 0.8, dict(tin=T("blur", 8), zoom=[1.02, 1.08])),                # tampak depan, menuju putaran 2
+    (32, P(0), "ayla_a", 53.10, 0.78, dict(tin=T("blur", 8), zoom=[1.02, 1.08])),                # tampak depan, menuju putaran 2
     # ===== putaran 2: Ayla merah + kabin (sambungan lagu: light leak lembut)
-    (P(0), P(4), "ayla_b", 0.90, 0.8, dict(tin=T("leak", 12), zoom=[1.02, 1.08])),              # Ayla merah di showroom
+    (P(0), P(4), "ayla_b", 1.80, 0.8, dict(tin=T("leak", 12), zoom=[1.02, 1.08])),              # Ayla merah di showroom
     (P(4), P(6), "ayla_b", 6.10, 0.8, dict(tin=T("push", 8, "l"), zoom=[1.03, 1.08])),          # depan merah + emblem
     (P(6), P(8), "ayla_b", 9.40, 0.8, dict(tin=T("spin", 8, "r"), zoom=[1.04, 1.08])),          # belakang merah
     (P(8), P(10), "ayla_a", 12.00, 0.8, dict(tin=T("slice", 10), zoom=[1.03, 1.08])),           # velg
@@ -74,7 +75,7 @@ SHOTS = [
     (P(26), P(28), "ayla_b", 7.30, 0.8, dict(tin=T("push", 6, "r"), zoom=[1.03, 1.08])),        # depan merah
     (P(28), P(30), "ayla_a", 9.30, 0.8, dict(tin=T("zoom", 6), zoom=[1.03, 1.08])),             # grille
     (P(30), P(32), "ayla_a", 12.85, 0.8, dict(tin=T("push", 6, "u"), zoom=[1.03, 1.08])),       # velg
-    (P(32), None, "ayla_a", 55.20, 0.8, dict(tin=T("blur", 8), zoom=[1.02, 1.08])),             # hero (= pembuka)
+    (P(32), None, "ayla_a", 55.58, 0.6, dict(tin=T("blur", 8), zoom=[1.02, 1.08])),            # hero (= pembuka), agak slow-mo krn ujung video A memudar
 ]
 
 # (ketukan mulai, ketukan selesai, judul, sub, posisi top|bottom, besar)
