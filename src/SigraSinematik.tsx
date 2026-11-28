@@ -16,15 +16,13 @@ import {
   useCurrentFrame,
 } from "remotion";
 import data from "./sigra.json";
+import { Fire, FireSpec, H, Lamp, Light, W, fireEnv } from "./sigraFx";
 
 // Gaya sinematik malam: grading gelap (sudah dibakar di public/clips/sigra.mp4, lihat
 // scripts/prep_sigra.py), gerak kamera pelan, efek cahaya & transisi dikunci ke ketukan.
-const W = 1080;
-const H = 1920;
 const SANS = "Montserrat, Arial, sans-serif";
 
 type Pt = number[];
-type Bloom = { at: number; x: number; y: number; color: string };
 type Shot = {
   f: number;
   d: number;
@@ -35,12 +33,10 @@ type Shot = {
   ov: number;
   zoom: number[];
   pan: number;
-  light?: Pt;
   mask?: Pt;
-  glow?: string;
   flash?: boolean;
-  lamps?: Pt[];
-  bloom?: Bloom[];
+  lights?: Light[];
+  fire?: FireSpec;
   shade?: number;
 };
 const shots = data.shots as Shot[];
@@ -59,25 +55,6 @@ const useFonts = () => {
     ]).then(() => continueRender(h));
   }, [h]);
 };
-
-// ------------------------------------------------------------------ cahaya
-const COLORS: Record<string, string> = {
-  white: "255,250,240",
-  red: "255,40,30",
-  fire: "255,150,60",
-};
-
-// pendaran cahaya (screen blend) di titik (x, y)
-const Glow: React.FC<{ x: number; y: number; r: number; o: number; color?: string }> = ({ x, y, r, o, color = "white" }) =>
-  o <= 0.001 ? null : (
-    <AbsoluteFill
-      style={{
-        mixBlendMode: "screen",
-        opacity: o,
-        background: `radial-gradient(circle ${r}px at ${x * 100}% ${y * 100}%, rgba(${COLORS[color]},0.95), rgba(${COLORS[color]},0.35) 35%, rgba(${COLORS[color]},0) 100%)`,
-      }}
-    />
-  );
 
 // ------------------------------------------------------------------ varian
 // terang = grading mendekati kecerahan asli (public/clips/sigra_terang.mp4) + vignette tipis
@@ -111,17 +88,11 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
   let bright = 1;
   let blur = 0;
   let whip = 0; // px blur horizontal
-  let glowO = 0;
-  if (s.inn === "fromBlack") {
-    bright = interpolate(f, [0, 10], [0, 1], { ...clamp, easing: outCubic });
-    glowO = interpolate(f, [4, 14, s.d], [0, 0.55, 0.35], clamp);
-  }
+  if (s.inn === "fromBlack") bright = interpolate(f, [0, 10], [0, 1], { ...clamp, easing: outCubic });
   if (s.inn === "lightOn") {
-    // gelap -> kedip -> menyala, pendaran lampu memuncak lalu menetap
+    // gelap -> kedip -> menyala (sinkron dengan lampu di sigraFx.lampLevel)
     bright = interpolate(f, [0, 3, 4, 5, 9], [0.35, 0.45, 0.85, 0.5, 1], clamp);
-    glowO = s.light ? interpolate(f, [3, 4, 5, 9, 18], [0, 0.8, 0.3, 1, 0.45], clamp) : 0;
   }
-  if (s.glow && s.inn !== "fromBlack") glowO = 0.4;
   if (s.inn === "focus") blur = interpolate(f, [0, 16], [22, 0], { ...clamp, easing: ease });
   if (s.inn === "whip") {
     const p = interpolate(f, [0, 5], [1, 0], { ...clamp, easing: outCubic });
@@ -144,12 +115,8 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
     flashO = interpolate(f, [0, 1, 8], [0.85, 0.6, 0], { ...clamp, easing: outCubic });
     bright *= interpolate(f, [0, 10], [1.5, 1], clamp);
   }
-  // bloom terjadwal (semburan cahaya di ketukan)
-  const blooms = (s.bloom ?? []).map((b) => ({
-    ...b,
-    o: interpolate(f, [b.at - 1, b.at + 1, b.at + 14], [0, 1, 0], { ...clamp, easing: outCubic }),
-  }));
-  blooms.forEach((b) => (bright *= 1 + 0.45 * b.o));
+  // semburan api menerangi seluruh frame
+  bright *= 1 + 0.3 * fireEnv(s.fire, f);
 
   // --- transisi mask: shot ini muncul kecil di dalam lampu shot sebelumnya, lalu membesar
   let maskStyle: React.CSSProperties = {};
@@ -197,6 +164,11 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
                 <Clip trim={trim} rate={s.rate} />
               </AbsoluteFill>
             )}
+            {/* cahaya & api ikut gerak kamera */}
+            {(s.lights ?? []).map((l, k) => (
+              <Lamp key={k} l={l} f={f} />
+            ))}
+            {s.fire && <Fire spec={s.fire} f={f} />}
           </AbsoluteFill>
           {s.shade ? (
             <AbsoluteFill
@@ -205,14 +177,6 @@ const Shot: React.FC<{ s: Shot; i: number }> = ({ s, i }) => {
               }}
             />
           ) : null}
-          {s.light && <Glow x={s.light[0]} y={s.light[1]} r={s.glow === "red" ? 520 : 380} o={glowO} color={s.glow ?? "white"} />}
-          {s.flash &&
-            (s.lamps ?? []).map((p, k) => (
-              <Glow key={k} x={p[0]} y={p[1]} r={300} o={interpolate(f, [0, 3, 30], [1, 0.9, 0.25], clamp)} />
-            ))}
-          {blooms.map((b, k) => (
-            <Glow key={`b${k}`} x={b.x} y={b.y} r={700} o={b.o} color={b.color} />
-          ))}
         </AbsoluteFill>
       </AbsoluteFill>
       {flashO > 0 && <AbsoluteFill style={{ background: "#fff", opacity: flashO }} />}

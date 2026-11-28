@@ -34,7 +34,10 @@ npx remotion render SigraTerang out/sigra_terang.mp4 --crf=18
 
 Efek di `SigraSinematik`: `lightOn` (lampu menyala), `fromBlack`, `dim` (meredup ke gelap),
 `whip` (blur horizontal), `stretch` (glitch pixel-stretch), `focus` (rack focus),
-`mask` (shot berikutnya muncul di dalam lampu lalu membesar), `flash` + `bloom` (semburan cahaya).
+`mask` (shot berikutnya muncul di dalam lampu lalu membesar), `flash` (kilat putih di drop).
+Efek cahaya & api ada di `src/sigraFx.tsx`: `lights` (lampu menyala: inti putih, bloom, flare horizontal,
+pantulan di lantai) dan `fire` (semburan api knalpot berbasis partikel + percikan + asap + cahaya oranye).
+Posisi lampu/api dan ketukannya diatur di `scripts/build_sigra.py` (`HEAD_ON`, `HERO_ON`, `REAR_ON`, `FIRE`).
 
 ## Struktur
 
